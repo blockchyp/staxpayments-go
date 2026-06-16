@@ -11,7 +11,7 @@ import (
 )
 
 // DefaultCoreHost is the default Stax core API host used when none is supplied.
-const DefaultCoreHost = "https://api.staxpayments.com"
+const DefaultCoreHost = "https://apiprod.fattlabs.com"
 
 // transientCredentialsPath is the core API path that exchanges a Stax bearer
 // token for short-lived BlockChyp transient credentials. This is an internal

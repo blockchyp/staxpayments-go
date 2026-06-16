@@ -132,6 +132,21 @@ func NewStaxClient(bearerToken, coreHost string) Client {
 	return client
 }
 
+// SetCoreHost overrides the Stax core API host used to exchange the bearer
+// token for transient credentials and to serve core-routed endpoints. An empty
+// host resets it to DefaultCoreHost. Cached credentials remain valid;
+// subsequent exchanges and core-routed calls use the new host. It is a no-op on
+// a client not constructed with NewStaxClient.
+func (client *Client) SetCoreHost(host string) {
+	if client.staxAuth == nil {
+		return
+	}
+	if host == "" {
+		host = DefaultCoreHost
+	}
+	client.staxAuth.coreHost = host
+}
+
 // ExpireRouteCache invalidates the route cache to for testing.
 func (client *Client) ExpireRouteCache() {
 	for key, value := range routeCache {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/hmac"
+	crand "crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -12,7 +13,6 @@ import (
 	"io"
 	"io/ioutil"
 	"math"
-	crand "crypto/rand"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
@@ -45,6 +45,15 @@ func (client *Client) assembleDashboardURL(path string) string {
 	uri := client.DashboardHost
 	if uri == "" {
 		uri = DefaultDashboardHost
+	}
+
+	return uri + path
+}
+
+func (client *Client) assembleCoreURL(path string) string {
+	uri := client.CoreHost
+	if uri == "" {
+		uri = DefaultCoreHost
 	}
 
 	return uri + path
@@ -110,7 +119,7 @@ func (client *Client) DashboardRequest(path, method string, request, response in
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.Credentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
 		return err
 	}
 
@@ -153,7 +162,7 @@ func (client *Client) DashboardUpload(path string, request UploadMetadata, reade
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.Credentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
 		return err
 	}
 
@@ -210,7 +219,7 @@ func (client *Client) GatewayRequest(path, method string, request, response inte
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.Credentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
 		return err
 	}
 
@@ -353,4 +362,103 @@ func generateNonce() string {
 		r.Read(result)
 	}
 	return hex.EncodeToString(result)
+}
+
+// transientCredentialsPath is the core API path that exchanges a Stax bearer
+// token for short-lived Stax Payments transient credentials. This is an
+// internal mechanism of the SDK and is never exposed as a public method.
+const transientCredentialsPath = "/terminal/transient-credentials"
+
+// transientCredentialsSkew refreshes transient credentials this long before
+// their stated expiry to avoid a credential lapsing mid-request (clock-skew
+// buffer).
+const transientCredentialsSkew = 30 * time.Second
+
+// transientCredentialsResponse models the core API exchange response.
+type transientCredentialsResponse struct {
+	APIKey      string `json:"apiKey"`
+	BearerToken string `json:"bearerToken"`
+	SigningKey  string `json:"signingKey"`
+	// ExpiresAt is supplied by the Stax core API. It is assumed here and will be
+	// populated once the core endpoint is implemented.
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+// CoreRequest sends a request to the Stax core API, authenticated with the Stax
+// bearer token. It mirrors GatewayRequest/DashboardRequest, differing only in
+// host (CoreHost) and auth (the Stax bearer token rather than HMAC
+// credentials). Used by core-routed endpoints and by the internal
+// transient-credential exchange.
+func (client *Client) CoreRequest(path, method string, request, response interface{}, requestTimeout interface{}) error {
+	var body io.Reader
+	if method != http.MethodGet && request != nil {
+		content, err := json.Marshal(request)
+		if err != nil {
+			return err
+		}
+		body = bytes.NewBuffer(content)
+	}
+
+	req, err := http.NewRequest(method, client.assembleCoreURL(path), body)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+client.Credentials.BearerToken)
+	req.Header.Set("Content-Type", "application/json")
+
+	timeout := getTimeout(requestTimeout, client.GatewayTimeout)
+	ctx, cancel := context.WithTimeout(req.Context(), timeout)
+	defer cancel()
+
+	req = req.WithContext(ctx)
+
+	if client.LogRequests {
+		b, err := httputil.DumpRequestOut(req, true)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintln(os.Stderr, "CORE API REQUEST:")
+		fmt.Fprintln(os.Stderr, string(b))
+	}
+
+	res, err := client.coreHTTPClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	return consumeResponse(res, response)
+}
+
+// ensure guarantees the client holds valid merchant-scoped transient
+// credentials, exchanging the Stax bearer token via the core API when the cache
+// is empty or near expiry. The mutex serializes concurrent callers so only one
+// exchange is in flight at a time (single-flight). Terminal and gateway calls
+// invoke this before signing a gateway request.
+func (client *Client) ensure() error {
+	client.bcCredentialsMu.Lock()
+	defer client.bcCredentialsMu.Unlock()
+
+	if !client.bcCredentialsExpiry.IsZero() && time.Now().Add(transientCredentialsSkew).Before(client.bcCredentialsExpiry) {
+		return nil
+	}
+
+	var result transientCredentialsResponse
+	if err := client.CoreRequest(transientCredentialsPath, http.MethodPost, struct{}{}, &result, nil); err != nil {
+		return err
+	}
+
+	client.bcCredentials = APICredentials{
+		APIKey:      result.APIKey,
+		BearerToken: result.BearerToken,
+		SigningKey:  result.SigningKey,
+	}
+	if result.ExpiresAt.IsZero() {
+		client.bcCredentialsExpiry = time.Now().Add(8 * time.Hour)
+	} else {
+		client.bcCredentialsExpiry = result.ExpiresAt
+	}
+
+	return nil
 }

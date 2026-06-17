@@ -18,6 +18,10 @@ type APICredentials struct {
 	SigningKey  string `json:"signingKey"`
 }
 
+type StaxAPICredentials struct {
+	BearerToken string `json:"bearerToken"`
+}
+
 // CardType is used to differentiate credit, debit, and EBT.
 type CardType int
 

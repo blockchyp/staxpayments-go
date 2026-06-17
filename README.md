@@ -34,7 +34,7 @@ go get github.com/blockchyp/staxpayments-go
 ## A Simple Example
 
 Running your first terminal transaction is easy. Make sure you have a Stax Payments
-terminal, activate it, and generate a set of API keys.
+terminal, activate it, and obtain a Stax bearer token.
 
 ```
 package main
@@ -49,13 +49,12 @@ import (
 
 func main() {
 
-    creds := staxpayments.APICredentials{
-        APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
-        BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
-        SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
-    }
-
-    client := staxpayments.NewClient(creds)
+    // Construct a client with your Stax bearer token. Terminal transactions
+    // (charge, refund, preauth) transparently exchange it for short-lived
+    // transient credentials.
+    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
 
     req := staxpayments.AuthorizationRequest{
         Test: true,
@@ -182,22 +181,18 @@ import (
     "fmt"
     "log"
 
-    blockchyp "github.com/blockchyp/blockchyp-go/v2"
+    staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
 func chargeExample() {
-    // sample credentials
-    creds := blockchyp.APICredentials{
-        APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
-        BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
-        SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
-    }
-
-    // instantiate the client
-    client := blockchyp.NewClient(creds)
+    // construct a client with your Stax bearer token; terminal transactions
+    // transparently exchange it for short-lived transient credentials
+    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
 
     // setup request object
-    request := blockchyp.AuthorizationRequest{
+    request := staxpayments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "55.00",
@@ -273,22 +268,18 @@ import (
     "fmt"
     "log"
 
-    blockchyp "github.com/blockchyp/blockchyp-go/v2"
+    staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
 func preauthExample() {
-    // sample credentials
-    creds := blockchyp.APICredentials{
-        APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
-        BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
-        SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
-    }
-
-    // instantiate the client
-    client := blockchyp.NewClient(creds)
+    // construct a client with your Stax bearer token; terminal transactions
+    // transparently exchange it for short-lived transient credentials
+    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
 
     // setup request object
-    request := blockchyp.AuthorizationRequest{
+    request := staxpayments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "27.00",
@@ -378,22 +369,18 @@ import (
     "fmt"
     "log"
 
-    blockchyp "github.com/blockchyp/blockchyp-go/v2"
+    staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
 func refundExample() {
-    // sample credentials
-    creds := blockchyp.APICredentials{
-        APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
-        BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
-        SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
-    }
-
-    // instantiate the client
-    client := blockchyp.NewClient(creds)
+    // construct a client with your Stax bearer token; terminal transactions
+    // transparently exchange it for short-lived transient credentials
+    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
 
     // setup request object
-    request := blockchyp.RefundRequest{
+    request := staxpayments.RefundRequest{
         TransactionID: "<PREVIOUS TRANSACTION ID>",
 
         // Optional amount for partial refunds.
@@ -447,22 +434,18 @@ import (
     "fmt"
     "log"
 
-    blockchyp "github.com/blockchyp/blockchyp-go/v2"
+    staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
 func terminalsExample() {
-    // sample credentials
-    creds := blockchyp.APICredentials{
-        APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
-        BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
-        SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
-    }
-
-    // instantiate the client
-    client := blockchyp.NewClient(creds)
+    // construct a client with your Stax bearer token; terminal transactions
+    // transparently exchange it for short-lived transient credentials
+    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
 
     // setup request object
-    request := blockchyp.TerminalProfileRequest{}
+    request := staxpayments.TerminalProfileRequest{}
 
     response, err := client.Terminals(request)
 

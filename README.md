@@ -1,16 +1,16 @@
-# BlockChyp Go SDK
+# Stax Payments Go SDK
 
-[![Build Status](https://github.com/blockchyp/blockchyp-go/actions/workflows/main.yml/badge.svg)](https://github.com/blockchyp/blockchyp-go/actions/workflows/main.yml)
-[![Release](https://img.shields.io/github/release/blockchyp/blockchyp-go/all.svg?style=shield)](https://github.com/blockchyp/blockchyp-go/releases/latest)
-[![Go Report Card](https://goreportcard.com/badge/github.com/blockchyp/blockchyp-go)](https://goreportcard.com/report/github.com/blockchyp/blockchyp-go)
-[![GoDoc](https://godoc.org/github.com/blockchyp/blockchyp-go?status.svg)](https://godoc.org/github.com/blockchyp/blockchyp-go)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/blockchyp/blockchyp-go/blob/master/LICENSE)
+[![Build Status](https://github.com/blockchyp/staxpayments-go/actions/workflows/main.yml/badge.svg)](https://github.com/blockchyp/staxpayments-go/actions/workflows/main.yml)
+[![Release](https://img.shields.io/github/release/blockchyp/staxpayments-go/all.svg?style=shield)](https://github.com/blockchyp/staxpayments-go/releases/latest)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blockchyp/staxpayments-go)](https://goreportcard.com/report/github.com/blockchyp/staxpayments-go)
+[![GoDoc](https://godoc.org/github.com/blockchyp/staxpayments-go?status.svg)](https://godoc.org/github.com/blockchyp/staxpayments-go)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/blockchyp/staxpayments-go/blob/master/LICENSE)
 
-This is the Go SDK for BlockChyp. Like all BlockChyp SDKs, it provides a full
-Go client for the BlockChyp gateway and BlockChyp payment terminals.
+This is the Go SDK for Stax Payments. Like all Stax Payments SDKs, it provides a full
+Go client for the Stax Payments gateway and Stax Payments payment terminals.
 
 This project also contains a command line interface for Windows, Linux, and
-Mac OS developers working in languages or on platforms for which BlockChyp doesn't
+Mac OS developers working in languages or on platforms for which Stax Payments doesn't
 currently provide a supported SDK.
 
 ## Command Line Interface
@@ -25,15 +25,15 @@ Check out the [CLI Reference](docs/cli.md) for more information.
 
 ## Go Installation
 
-For Go developers, you can install BlockChyp in the usual way with `go get`.
+For Go developers, you can install Stax Payments in the usual way with `go get`.
 
 ```
-go get github.com/blockchyp/blockchyp-go/v2
+go get github.com/blockchyp/staxpayments-go
 ```
 
 ## A Simple Example
 
-Running your first terminal transaction is easy. Make sure you have a BlockChyp
+Running your first terminal transaction is easy. Make sure you have a Stax Payments
 terminal, activate it, and generate a set of API keys.
 
 ```
@@ -44,20 +44,20 @@ import (
     "fmt"
     "log"
 
-    blockchyp "github.com/blockchyp/blockchyp-go/v2"
+    staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
 func main() {
 
-    creds := blockchyp.APICredentials{
+    creds := staxpayments.APICredentials{
         APIKey:      "ZDSMMZLGRPBPRTJUBTAFBYZ33Q",
         BearerToken: "ZLBW5NR4U5PKD5PNP3ZP3OZS5U",
         SigningKey:  "9c6a5e8e763df1c9256e3d72bd7f53dfbd07312938131c75b3bfd254da787947",
     }
 
-    client := blockchyp.NewClient(creds)
+    client := staxpayments.NewClient(creds)
 
-    req := blockchyp.AuthorizationRequest{
+    req := staxpayments.AuthorizationRequest{
         Test: true,
         TerminalName: "Test Terminal",
         Amount: "55.00",
@@ -670,7 +670,7 @@ Change these settings:
   * Flat rate: 350 basis points
   * Transaction fee: $0.50
 
-Create a blockchyp.json file with credentials for the test merchant.
+Create a staxpayments.json file with credentials for the test merchant.
 
 ### Running
 

@@ -34,8 +34,8 @@ const (
 
 // Default filesystem configuration.
 const (
-	ConfigDir  = "blockchyp"
-	ConfigFile = "blockchyp.json"
+	ConfigDir  = "staxpayments"
+	ConfigFile = "staxpayments.json"
 )
 
 // terminalCN is the common name on a terminal certificate.
@@ -85,7 +85,7 @@ func NewClient(creds APICredentials) Client {
 		TestGatewayHost: DefaultTestGatewayHost,
 		DashboardHost:   DefaultDashboardHost,
 		HTTPS:           DefaultHTTPS,
-		RouteCache:      filepath.Join(os.TempDir(), ".blockchyp_routes"),
+		RouteCache:      filepath.Join(os.TempDir(), ".staxpayments_routes"),
 
 		GatewayTimeout:  DefaultGatewayTimeout,
 		TerminalTimeout: DefaultTerminalTimeout,
@@ -122,7 +122,7 @@ func NewClient(creds APICredentials) Client {
 
 // NewStaxClient returns a Client that authenticates with a Stax bearer token.
 // Terminal-related calls transparently exchange the bearer token for short-lived
-// BlockChyp transient credentials via the Stax core API.
+// Stax Payments transient credentials via the Stax core API.
 func NewStaxClient(bearerToken, coreHost string) Client {
 	client := NewClient(APICredentials{})
 	if coreHost == "" {

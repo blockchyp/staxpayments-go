@@ -31,7 +31,7 @@ type TerminalRouteResponse struct {
 }
 
 /*
-APIRequestHeaders models the http headers required for BlockChyp API requests.
+APIRequestHeaders models the http headers required for Stax Payments API requests.
 */
 type APIRequestHeaders struct {
 	Timestamp   string

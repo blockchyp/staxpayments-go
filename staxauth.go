@@ -14,7 +14,7 @@ import (
 const DefaultCoreHost = "https://apiprod.fattlabs.com"
 
 // transientCredentialsPath is the core API path that exchanges a Stax bearer
-// token for short-lived BlockChyp transient credentials. This is an internal
+// token for short-lived Stax Payments transient credentials. This is an internal
 // mechanism of the SDK and is never exposed as a public method.
 const transientCredentialsPath = "/terminal/transient-credentials"
 

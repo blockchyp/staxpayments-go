@@ -18,6 +18,9 @@ type APICredentials struct {
 	SigningKey  string `json:"signingKey"`
 }
 
+// StaxAPICredentials is the Stax bearer token used to construct a client. It is
+// the only credential an integrator supplies; the BlockChyp gateway credentials
+// are obtained and managed internally by the SDK.
 type StaxAPICredentials struct {
 	BearerToken string `json:"bearerToken"`
 }

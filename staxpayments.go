@@ -18,6 +18,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -26,6 +27,7 @@ const (
 	DefaultGatewayHost     = "https://api.blockchyp.com"
 	DefaultDashboardHost   = "https://dashboard.blockchyp.com"
 	DefaultTestGatewayHost = "https://test.blockchyp.com"
+	DefaultCoreHost        = "https://apiprod.fattlabs.com"
 	DefaultHTTPS           = true
 	DefaultRouteCacheTTL   = 60 * time.Minute
 	DefaultGatewayTimeout  = 20 * time.Second
@@ -34,8 +36,8 @@ const (
 
 // Default filesystem configuration.
 const (
-	ConfigDir  = "blockchyp"
-	ConfigFile = "blockchyp.json"
+	ConfigDir  = "staxpayments"
+	ConfigFile = "staxpayments.json"
 )
 
 // terminalCN is the common name on a terminal certificate.
@@ -56,12 +58,16 @@ var Version string
 
 // Client is the main interface used by application developers.
 type Client struct {
-	Credentials     APICredentials
-	GatewayHost     string
-	DashboardHost   string
-	TestGatewayHost string
-	HTTPS           bool
-	RouteCache      string
+	Credentials         StaxAPICredentials
+	bcCredentials       APICredentials
+	bcCredentialsExpiry time.Time
+	bcCredentialsMu     sync.Mutex
+	GatewayHost         string
+	DashboardHost       string
+	TestGatewayHost     string
+	CoreHost            string
+	HTTPS               bool
+	RouteCache          string
 
 	GatewayTimeout  time.Duration
 	TerminalTimeout time.Duration
@@ -69,14 +75,13 @@ type Client struct {
 	routeCacheTTL      time.Duration
 	gatewayHTTPClient  *http.Client
 	terminalHTTPClient *http.Client
+	coreHTTPClient     *http.Client
 
 	LogRequests bool
-
-	staxAuth *staxAuth
 }
 
 // NewClient returns a default Client configured with the given credentials.
-func NewClient(creds APICredentials) Client {
+func NewClient(creds StaxAPICredentials) Client {
 	userAgent := BuildUserAgent()
 
 	return Client{
@@ -84,8 +89,9 @@ func NewClient(creds APICredentials) Client {
 		GatewayHost:     DefaultGatewayHost,
 		TestGatewayHost: DefaultTestGatewayHost,
 		DashboardHost:   DefaultDashboardHost,
+		CoreHost:        DefaultCoreHost,
 		HTTPS:           DefaultHTTPS,
-		RouteCache:      filepath.Join(os.TempDir(), ".blockchyp_routes"),
+		RouteCache:      filepath.Join(os.TempDir(), ".staxpayments_routes"),
 
 		GatewayTimeout:  DefaultGatewayTimeout,
 		TerminalTimeout: DefaultTerminalTimeout,
@@ -117,19 +123,18 @@ func NewClient(creds APICredentials) Client {
 				userAgent,
 			),
 		},
+		coreHTTPClient: &http.Client{
+			Transport: AddUserAgent(
+				&http.Transport{
+					Dial: (&net.Dialer{
+						Timeout: 5 * time.Second,
+					}).Dial,
+					TLSHandshakeTimeout: 5 * time.Second,
+				},
+				userAgent,
+			),
+		}, // Timeout is set per request
 	}
-}
-
-// NewStaxClient returns a Client that authenticates with a Stax bearer token.
-// Terminal-related calls transparently exchange the bearer token for short-lived
-// BlockChyp transient credentials via the Stax core API.
-func NewStaxClient(bearerToken, coreHost string) Client {
-	client := NewClient(APICredentials{})
-	if coreHost == "" {
-		coreHost = DefaultCoreHost
-	}
-	client.staxAuth = newStaxAuth(bearerToken, coreHost, client.GatewayHost)
-	return client
 }
 
 // ExpireRouteCache invalidates the route cache to for testing.
@@ -154,7 +159,7 @@ func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationRespon
 	var response AuthorizationResponse
 	var err error
 
-	if client.Credentials, err = client.staxAuth.ensure(); err != nil {
+	if err = client.ensure(); err != nil {
 		return &response, err
 	}
 
@@ -205,7 +210,7 @@ func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationRespo
 	var response AuthorizationResponse
 	var err error
 
-	if client.Credentials, err = client.staxAuth.ensure(); err != nil {
+	if err = client.ensure(); err != nil {
 		return &response, err
 	}
 
@@ -256,7 +261,7 @@ func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, err
 	var response AuthorizationResponse
 	var err error
 
-	if client.Credentials, err = client.staxAuth.ensure(); err != nil {
+	if err = client.ensure(); err != nil {
 		return &response, err
 	}
 
@@ -306,7 +311,7 @@ func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, err
 func (client *Client) Terminals(request TerminalProfileRequest) (*TerminalProfileResponse, error) {
 	var response TerminalProfileResponse
 
-	err := client.staxAuth.coreRequest("GET", "/terminals", request, &response)
+	err := client.CoreRequest("/terminals", "GET", request, &response, request.Timeout)
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
 		response.ResponseDescription = ResponseTimedOut

@@ -13,7 +13,7 @@ func BuildUserAgent() string {
 		version = "Unknown"
 	}
 
-	return fmt.Sprintf("BlockChyp-Go/%s", version)
+	return fmt.Sprintf("StaxPayments-Go/%s", version)
 }
 
 // AddUserAgent adds a user agent header to an http.RoundTripper.

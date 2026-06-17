@@ -77,7 +77,7 @@ func (client *Client) readFromOfflineCache(terminalName string) *routeCacheEntry
 		return nil
 	}
 
-	route, ok := cache.Routes[client.Credentials.APIKey+terminalName]
+	route, ok := cache.Routes[client.bcCredentials.APIKey+terminalName]
 	if ok {
 		return &route
 	}
@@ -178,7 +178,7 @@ func (client *Client) routeCachePut(terminalRoute TerminalRoute) {
 		TTL:   time.Now().Add(client.routeCacheTTL),
 	}
 
-	routeCache[client.Credentials.APIKey+terminalRoute.TerminalName] = cacheEntry
+	routeCache[client.bcCredentials.APIKey+terminalRoute.TerminalName] = cacheEntry
 
 	go client.updateOfflineCache(&cacheEntry)
 
@@ -193,7 +193,7 @@ func (client *Client) deriveOfflineKey() []byte {
 		return []byte{}
 	}
 	hash.Write(fixedKey)
-	dynamicKey, err := hex.DecodeString(client.Credentials.SigningKey)
+	dynamicKey, err := hex.DecodeString(client.bcCredentials.SigningKey)
 	if err != nil {
 		fmt.Println(err)
 		return []byte{}
@@ -233,7 +233,7 @@ func (client *Client) updateOfflineCache(cacheEntry *routeCacheEntry) {
 	cacheEntry.Route.TransientCredentials.BearerToken = client.encrypt(cacheEntry.Route.TransientCredentials.BearerToken)
 	cacheEntry.Route.TransientCredentials.SigningKey = client.encrypt(cacheEntry.Route.TransientCredentials.SigningKey)
 
-	cache.Routes[client.Credentials.APIKey+cacheEntry.Route.TerminalName] = *cacheEntry
+	cache.Routes[client.bcCredentials.APIKey+cacheEntry.Route.TerminalName] = *cacheEntry
 
 	content, err := json.Marshal(cache)
 
@@ -316,7 +316,7 @@ func (client *Client) terminalRequest(route TerminalRoute, path, method string, 
 		return err
 	}
 
-	err = addAPIRequestHeaders(req, client.Credentials)
+	err = addAPIRequestHeaders(req, client.bcCredentials)
 	if err != nil {
 		return err
 	}

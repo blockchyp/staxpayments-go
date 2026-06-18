@@ -308,8 +308,8 @@ func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, err
 }
 
 // GetTerminals returns all terminals associated with the merchant account.
-func (client *Client) GetTerminals(request TerminalProfileRequest) (*Terminal, error) {
-	var response Terminal
+func (client *Client) GetTerminals(request TerminalProfileRequest) (*TerminalResponse, error) {
+	var response TerminalResponse
 
 	err := client.CoreRequest("/terminals", "GET", request, &response, request.Timeout)
 

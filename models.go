@@ -1219,8 +1219,8 @@ type TerminalProfileRequest struct {
 	Test bool `json:"test"`
 }
 
-// TerminalProfileResponse models a terminal profile response.
-type TerminalProfileResponse struct {
+// TerminalResponse models a terminal profile response.
+type TerminalResponse struct {
 	// Success indicates whether or not the request succeeded.
 	Success bool `json:"success"`
 
@@ -1232,75 +1232,37 @@ type TerminalProfileResponse struct {
 	ResponseDescription string `json:"responseDescription"`
 
 	// Results enumerates all terminal profiles in the response.
-	Results []TerminalProfile `json:"results"`
+	Results []Terminal `json:"results"`
 }
 
-// TerminalProfile contains details about a merchant board platform
-// configuration.
-type TerminalProfile struct {
-	// ID primary identifier for a given terminal.
+// Terminal represents a Stax payment terminal.
+type Terminal struct {
+	// ID is the primary identifier for a given terminal.
 	ID string `json:"id"`
 
-	// IPAddress is the terminal's local IP address.
-	IPAddress string `json:"ipAddress"`
+	// Nickname is the friendly name assigned to the terminal.
+	Nickname string `json:"nickname"`
 
-	// TerminalName is the name assigned to the terminal during activation.
-	TerminalName string `json:"terminalName"`
+	// StatusPort is the status port for the terminal.
+	StatusPort string `json:"statusPort"`
 
-	// TerminalType is the terminal type.
-	TerminalType string `json:"terminalType"`
+	// Serial is the manufacturer's serial number.
+	Serial string `json:"serial"`
 
-	// TerminalTypeDisplayString is the terminal type display string.
-	TerminalTypeDisplayString string `json:"terminalTypeDisplayString"`
+	// Type is the terminal type.
+	Type string `json:"type"`
 
-	// BlockChypFirmwareVersion is the current firmware version deployed on the
-	// terminal.
-	BlockChypFirmwareVersion string `json:"blockChypFirmwareVersion"`
+	// Model is the terminal model.
+	Model string `json:"model"`
 
-	// CloudBased indicates whether or not the terminal is configured for cloud
-	// relay.
-	CloudBased bool `json:"cloudBased"`
+	// IsDefault indicates whether or not this is the default terminal.
+	IsDefault bool `json:"isDefault"`
 
-	// PublicKey is the terminal's elliptic curve public key.
-	PublicKey string `json:"publicKey"`
+	// RegisterNum is the register number associated with the terminal.
+	RegisterNum string `json:"registerNum"`
 
-	// SerialNumber is the manufacturer's serial number.
-	SerialNumber string `json:"serialNumber"`
-
-	// Online indicates whether or not the terminal is currently online.
-	Online bool `json:"online"`
-
-	// Since the date and time the terminal was first brought online.
-	Since string `json:"since"`
-
-	// TotalMemory is the total memory on the terminal.
-	TotalMemory int `json:"totalMemory"`
-
-	// TotalStorage is the storage on the terminal.
-	TotalStorage int `json:"totalStorage"`
-
-	// AvailableMemory is the available (unused) memory on the terminal.
-	AvailableMemory int `json:"availableMemory"`
-
-	// AvailableStorage is the available (unused) storage on the terminal.
-	AvailableStorage int `json:"availableStorage"`
-
-	// UsedMemory is the memory currently in use on the terminal.
-	UsedMemory int `json:"usedMemory"`
-
-	// UsedStorage is the storage currently in use on the terminal.
-	UsedStorage int `json:"usedStorage"`
-
-	// BrandingPreview is the branding asset currently displayed on the terminal.
-	BrandingPreview string `json:"brandingPreview"`
-
-	// GroupID the id of the terminal group to which the terminal belongs, if
-	// any.
-	GroupID string `json:"groupId"`
-
-	// GroupName the name of the terminal group to which the terminal belongs, if
-	// any.
-	GroupName string `json:"groupName"`
+	// FirmwareVersion is the current firmware version deployed on the terminal.
+	FirmwareVersion string `json:"firmwareVersion"`
 }
 
 // UploadMetadata models information needed to process a file upload.

@@ -414,17 +414,7 @@ These features can be used to extend a point of sale system's functionality.
 
 #### List Terminals
 
-
-
-* **API Credential Types:** Merchant & Partner
-* **Required Role:** Terminal Management
-
-This API returns details about terminals associated with a merchant account.
-
-Status and resource information is returned for all terminals along with a preview of the 
-current branding image displayed on the terminal
-
-
+Returns all terminals associated with the merchant account.
 
 
 ```go
@@ -437,7 +427,7 @@ import (
     staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
-func terminalsExample() {
+func getTerminalsExample() {
     // construct a client with your Stax bearer token; terminal transactions
     // transparently exchange it for short-lived transient credentials
     client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
@@ -447,7 +437,7 @@ func terminalsExample() {
     // setup request object
     request := staxpayments.TerminalProfileRequest{}
 
-    response, err := client.Terminals(request)
+    response, err := client.GetTerminals(request)
 
     if err != nil {
         log.Fatal(err)

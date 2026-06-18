@@ -367,7 +367,7 @@ func generateNonce() string {
 // transientCredentialsPath is the core API path that exchanges a Stax bearer
 // token for short-lived Stax Payments transient credentials. This is an
 // internal mechanism of the SDK and is never exposed as a public method.
-const transientCredentialsPath = "/terminal/transient-credentials"
+const transientCredentialsPath = "/terminals/transient-credentials"
 
 // transientCredentialsSkew refreshes transient credentials this long before
 // their stated expiry to avoid a credential lapsing mid-request (clock-skew

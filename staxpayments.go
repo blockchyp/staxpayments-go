@@ -307,9 +307,9 @@ func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, err
 	return &response, err
 }
 
-// Terminals returns all terminals associated with the merchant account.
-func (client *Client) Terminals(request TerminalProfileRequest) (*TerminalProfileResponse, error) {
-	var response TerminalProfileResponse
+// GetTerminals returns all terminals associated with the merchant account.
+func (client *Client) GetTerminals(request TerminalProfileRequest) (*Terminal, error) {
+	var response Terminal
 
 	err := client.CoreRequest("/terminals", "GET", request, &response, request.Timeout)
 

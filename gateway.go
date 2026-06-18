@@ -445,7 +445,7 @@ func (client *Client) ensure() error {
 	}
 
 	var result transientCredentialsResponse
-	if err := client.CoreRequest(transientCredentialsPath, http.MethodPost, struct{}{}, &result, nil); err != nil {
+	if err := client.CoreRequest(transientCredentialsPath, http.MethodGet, struct{}{}, &result, nil); err != nil {
 		return err
 	}
 

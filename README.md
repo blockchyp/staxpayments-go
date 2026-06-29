@@ -51,7 +51,8 @@ func main() {
 
     // Construct a client with your Stax bearer token. Terminal transactions
     // (charge, refund, preauth) transparently exchange it for short-lived
-    // transient credentials.
+    // transient credentials. Each API area is reached through its own
+    // namespace client, e.g. client.Payments() or client.Terminals().
     client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
@@ -62,7 +63,7 @@ func main() {
         Amount: "55.00",
     }
 
-    response, err := client.Charge(req)
+    response, err := client.Payments().Charge(req)
 
     if err != nil {
         log.Fatal(err)
@@ -198,7 +199,7 @@ func chargeExample() {
         Amount:       "55.00",
     }
 
-    response, err := client.Charge(request)
+    response, err := client.Payments().Charge(request)
 
     if err != nil {
         log.Fatal(err)
@@ -285,7 +286,7 @@ func preauthExample() {
         Amount:       "27.00",
     }
 
-    response, err := client.Preauth(request)
+    response, err := client.Payments().Preauth(request)
 
     if err != nil {
         log.Fatal(err)
@@ -387,7 +388,7 @@ func refundExample() {
         Amount: "5.00",
     }
 
-    response, err := client.Refund(request)
+    response, err := client.Payments().Refund(request)
 
     if err != nil {
         log.Fatal(err)
@@ -414,7 +415,17 @@ These features can be used to extend a point of sale system's functionality.
 
 #### List Terminals
 
-Returns all terminals associated with the merchant account.
+
+
+* **API Credential Types:** Merchant & Partner
+* **Required Role:** Terminal Management
+
+This API returns details about terminals associated with a merchant account.
+
+Status and resource information is returned for all terminals along with a preview of the 
+current branding image displayed on the terminal
+
+
 
 
 ```go
@@ -427,7 +438,7 @@ import (
     staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
-func getTerminalsExample() {
+func terminalsExample() {
     // construct a client with your Stax bearer token; terminal transactions
     // transparently exchange it for short-lived transient credentials
     client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
@@ -437,7 +448,7 @@ func getTerminalsExample() {
     // setup request object
     request := staxpayments.TerminalProfileRequest{}
 
-    response, err := client.GetTerminals(request)
+    response, err := client.Terminals().Terminals(request)
 
     if err != nil {
         log.Fatal(err)

@@ -45,15 +45,18 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func main() {
 
-    // Construct a client with your Stax bearer token. Terminal transactions
-    // (charge, refund, preauth) transparently exchange it for short-lived
-    // transient credentials. Each API area is reached through its own
-    // namespace client, e.g. client.Payments() or client.Terminals().
-    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+    // Each API area is its own module, imported and downloaded independently:
+    //   go get github.com/blockchyp/staxpayments-go/payments
+    // Shared types (requests, responses, credentials) live in the core module
+    // github.com/blockchyp/staxpayments-go. Construct a namespace client with
+    // your Stax bearer token; terminal transactions transparently exchange it
+    // for short-lived transient credentials.
+    client := payments.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -63,7 +66,7 @@ func main() {
         Amount: "55.00",
     }
 
-    response, err := client.Payments().Charge(req)
+    response, err := client.Charge(req)
 
     if err != nil {
         log.Fatal(err)
@@ -183,12 +186,14 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func chargeExample() {
-    // construct a client with your Stax bearer token; terminal transactions
-    // transparently exchange it for short-lived transient credentials
-    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the payments namespace client with your Stax bearer
+    // token; terminal transactions transparently exchange it for short-lived
+    // transient credentials
+    client := payments.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -199,7 +204,7 @@ func chargeExample() {
         Amount:       "55.00",
     }
 
-    response, err := client.Payments().Charge(request)
+    response, err := client.Charge(request)
 
     if err != nil {
         log.Fatal(err)
@@ -270,12 +275,14 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func preauthExample() {
-    // construct a client with your Stax bearer token; terminal transactions
-    // transparently exchange it for short-lived transient credentials
-    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the payments namespace client with your Stax bearer
+    // token; terminal transactions transparently exchange it for short-lived
+    // transient credentials
+    client := payments.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -286,7 +293,7 @@ func preauthExample() {
         Amount:       "27.00",
     }
 
-    response, err := client.Payments().Preauth(request)
+    response, err := client.Preauth(request)
 
     if err != nil {
         log.Fatal(err)
@@ -371,12 +378,14 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func refundExample() {
-    // construct a client with your Stax bearer token; terminal transactions
-    // transparently exchange it for short-lived transient credentials
-    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the payments namespace client with your Stax bearer
+    // token; terminal transactions transparently exchange it for short-lived
+    // transient credentials
+    client := payments.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -388,7 +397,7 @@ func refundExample() {
         Amount: "5.00",
     }
 
-    response, err := client.Payments().Refund(request)
+    response, err := client.Refund(request)
 
     if err != nil {
         log.Fatal(err)
@@ -436,19 +445,21 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/terminals"
 )
 
 func terminalsExample() {
-    // construct a client with your Stax bearer token; terminal transactions
-    // transparently exchange it for short-lived transient credentials
-    client := staxpayments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the terminals namespace client with your Stax bearer
+    // token; terminal transactions transparently exchange it for short-lived
+    // transient credentials
+    client := terminals.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
     // setup request object
     request := staxpayments.TerminalProfileRequest{}
 
-    response, err := client.Terminals().Terminals(request)
+    response, err := client.Terminals(request)
 
     if err != nil {
         log.Fatal(err)

@@ -15,24 +15,25 @@ import (
 	"net"
 
 	staxpayments "github.com/blockchyp/staxpayments-go"
+	"github.com/blockchyp/staxpayments-go/internal/core"
 )
 
 // Client is the Payment Endpoints client. It wraps the shared core client for
 // transport and credentials via an unexported field, so only this namespace's
 // own operations are part of its public API (the core transport methods are
-// deliberately not exposed). The embedded *HostConfig exposes the configurable
-// API hosts (GatewayHost, TestGatewayHost, DashboardHost, CoreHost), shared
-// with the underlying core client.
+// deliberately not exposed).
 type Client struct {
-	*staxpayments.HostConfig
-	core *staxpayments.Client
+	core *core.Client
 }
 
 // NewClient returns a Payment Endpoints client configured with the given Stax
-// bearer credentials.
+// bearer credentials. The shared core client can only be constructed through a
+// namespace like this one; the public staxpayments package exposes no client
+// constructor.
 func NewClient(creds staxpayments.StaxAPICredentials) *Client {
-	c := staxpayments.NewClient(creds)
-	return &Client{HostConfig: c.HostConfig, core: &c}
+	return &Client{
+		core: core.New(creds),
+	}
 }
 
 // Charge executes a standard direct preauth and capture.
@@ -41,7 +42,7 @@ func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationRespon
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
 
-	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
+	if errors.Is(err, core.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
 	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut
@@ -58,7 +59,7 @@ func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationRespo
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
 
-	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
+	if errors.Is(err, core.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
 	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut
@@ -75,7 +76,7 @@ func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, err
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/refund", "/api/refund", "POST", &request, &response, request.Test, request.Timeout)
 
-	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
+	if errors.Is(err, core.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
 	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut

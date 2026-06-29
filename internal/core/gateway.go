@@ -1,4 +1,4 @@
-package staxpayments
+package core
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	staxpayments "github.com/blockchyp/staxpayments-go"
 	"io"
 	"io/ioutil"
 	"math"
@@ -44,7 +45,7 @@ type APIRequestHeaders struct {
 func (client *Client) assembleDashboardURL(path string) string {
 	uri := client.DashboardHost
 	if uri == "" {
-		uri = DefaultDashboardHost
+		uri = staxpayments.DefaultDashboardHost
 	}
 
 	return uri + path
@@ -53,7 +54,7 @@ func (client *Client) assembleDashboardURL(path string) string {
 func (client *Client) assembleCoreURL(path string) string {
 	uri := client.CoreHost
 	if uri == "" {
-		uri = DefaultCoreHost
+		uri = staxpayments.DefaultCoreHost
 	}
 
 	return uri + path
@@ -67,13 +68,13 @@ func (client *Client) assembleGatewayURL(path string, testTx bool) string {
 		if len(client.TestGatewayHost) > 0 {
 			buffer.WriteString(client.TestGatewayHost)
 		} else {
-			buffer.WriteString(DefaultTestGatewayHost)
+			buffer.WriteString(staxpayments.DefaultTestGatewayHost)
 		}
 	} else {
 		if len(client.GatewayHost) > 0 {
 			buffer.WriteString(client.GatewayHost)
 		} else {
-			buffer.WriteString(DefaultGatewayHost)
+			buffer.WriteString(staxpayments.DefaultGatewayHost)
 		}
 	}
 	buffer.WriteString(path)
@@ -90,7 +91,7 @@ func consumeResponse(resp *http.Response, responseEntity interface{}) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		var ack Acknowledgement
+		var ack staxpayments.Acknowledgement
 		err := json.Unmarshal(b, &ack)
 		if err != nil || ack.Error == "" {
 			return errors.New(resp.Status)
@@ -155,7 +156,7 @@ func (client *Client) DashboardRequest(path, method string, request, response in
 }
 
 // DashboardUpload performs a file upload
-func (client *Client) DashboardUpload(path string, request UploadMetadata, reader io.Reader, response interface{}, requestTimeout interface{}) error {
+func (client *Client) DashboardUpload(path string, request staxpayments.UploadMetadata, reader io.Reader, response interface{}, requestTimeout interface{}) error {
 
 	req, err := http.NewRequest(http.MethodPost, client.assembleDashboardURL(path), reader)
 	if err != nil {
@@ -272,7 +273,7 @@ func (client *Client) GatewayGet(path string, responseEntity interface{}) error 
 
 func (client *Client) highClockDiff() bool {
 
-	response := HeartbeatResponse{}
+	response := staxpayments.HeartbeatResponse{}
 	err := client.GatewayRequest("/api/heartbeat", http.MethodGet, nil, &response, false, nil)
 	if err != nil {
 		return false
@@ -297,7 +298,7 @@ func populateHeaders(headers APIRequestHeaders, req *http.Request) {
 
 }
 
-func addAPIRequestHeaders(req *http.Request, creds APICredentials) error {
+func addAPIRequestHeaders(req *http.Request, creds staxpayments.APICredentials) error {
 
 	headers, err := generateAPIRequestHeaders(creds)
 	if err != nil {
@@ -310,7 +311,7 @@ func addAPIRequestHeaders(req *http.Request, creds APICredentials) error {
 
 // generateAPIRequestHeaders returns the standard API requests headers given a set of
 // credentials.
-func generateAPIRequestHeaders(creds APICredentials) (APIRequestHeaders, error) {
+func generateAPIRequestHeaders(creds staxpayments.APICredentials) (APIRequestHeaders, error) {
 
 	headers := APIRequestHeaders{
 		APIKey:      creds.APIKey,
@@ -449,7 +450,7 @@ func (client *Client) ensure() error {
 		return err
 	}
 
-	client.bcCredentials = APICredentials{
+	client.bcCredentials = staxpayments.APICredentials{
 		APIKey:      result.APIKey,
 		BearerToken: result.BearerToken,
 		SigningKey:  result.SigningKey,

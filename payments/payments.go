@@ -36,6 +36,51 @@ func NewClient(creds staxpayments.StaxAPICredentials) *Client {
 	}
 }
 
+// SetGatewayHost overrides the gateway host used for live transactions. Set it
+// to point the SDK at a non-production environment. An empty value restores the
+// default (https://api.blockchyp.com).
+func (client *Client) SetGatewayHost(host string) {
+	client.core.GatewayHost = host
+}
+
+// GatewayHost returns the gateway host used for live transactions.
+func (client *Client) GatewayHost() string {
+	return client.core.GatewayHost
+}
+
+// SetTestGatewayHost overrides the gateway host used for test transactions. An
+// empty value restores the default (https://test.blockchyp.com).
+func (client *Client) SetTestGatewayHost(host string) {
+	client.core.TestGatewayHost = host
+}
+
+// TestGatewayHost returns the gateway host used for test transactions.
+func (client *Client) TestGatewayHost() string {
+	return client.core.TestGatewayHost
+}
+
+// SetDashboardHost overrides the dashboard host. An empty value restores the
+// default (https://dashboard.blockchyp.com).
+func (client *Client) SetDashboardHost(host string) {
+	client.core.DashboardHost = host
+}
+
+// DashboardHost returns the dashboard host.
+func (client *Client) DashboardHost() string {
+	return client.core.DashboardHost
+}
+
+// SetCoreHost overrides the Stax core API host. An empty value restores the
+// default (https://apiprod.fattlabs.com).
+func (client *Client) SetCoreHost(host string) {
+	client.core.CoreHost = host
+}
+
+// CoreHost returns the Stax core API host.
+func (client *Client) CoreHost() string {
+	return client.core.CoreHost
+}
+
 // Charge executes a standard direct preauth and capture.
 func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationResponse, error) {
 	var response AuthorizationResponse

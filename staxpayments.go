@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -151,6 +152,62 @@ func (client *Client) ExpireRouteCache() {
 			client.updateOfflineCache(&route)
 		}
 	}
+}
+
+// terminalRequestEnvelope wraps a request with the transient credentials used
+// to authenticate directly against a terminal. It mirrors the JSON shape of the
+// generated Terminal*Request types but is request-model agnostic so the shared
+// terminal routing can build it for any namespace.
+type terminalRequestEnvelope struct {
+	APICredentials
+	Request interface{} `json:"request"`
+}
+
+// RouteTerminalRequest runs a terminal-routed transaction end to end: it ensures
+// valid transient credentials, populates signature options, resolves the
+// terminal route, and dispatches to the terminal, cloud relay, or gateway as
+// appropriate. It is the shared entry point the namespace clients (e.g. the
+// payments client) use for terminal transactions, so the terminal routing lives
+// in one place rather than being duplicated per namespace.
+func (client *Client) RouteTerminalRequest(terminalName, terminalPath, gatewayPath, method string, request, response interface{}, testTx bool, requestTimeout interface{}) error {
+	if err := client.ensure(); err != nil {
+		return err
+	}
+
+	if err := populateSignatureOptions(request); err != nil {
+		return err
+	}
+
+	var err error
+	if terminalName != "" {
+		var route TerminalRoute
+		route, err = client.resolveTerminalRoute(terminalName)
+		if err != nil {
+			return err
+		}
+
+		if route.CloudRelayEnabled {
+			err = client.RelayRequest(gatewayPath, method, request, response, testTx, requestTimeout)
+		} else {
+			authRequest := terminalRequestEnvelope{
+				APICredentials: route.TransientCredentials,
+				Request:        request,
+			}
+			err = client.terminalRequest(route, terminalPath, method, authRequest, response, requestTimeout)
+		}
+	} else {
+		err = client.GatewayRequest(gatewayPath, method, request, response, testTx, requestTimeout)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if err := handleSignature(request, response); err != nil {
+		log.Printf("Failed to write signature: %+v", err)
+	}
+
+	return nil
 }
 
 func getTimeout(requestTimeout interface{}, defaultTimeout time.Duration) time.Duration {

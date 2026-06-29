@@ -19,8 +19,11 @@ import (
 // Client is the Terminal Management Endpoints client. It wraps the shared core client for
 // transport and credentials via an unexported field, so only this namespace's
 // own operations are part of its public API (the core transport methods are
-// deliberately not exposed).
+// deliberately not exposed). The embedded *HostConfig exposes the configurable
+// API hosts (GatewayHost, TestGatewayHost, DashboardHost, CoreHost), shared
+// with the underlying core client.
 type Client struct {
+	*staxpayments.HostConfig
 	core *staxpayments.Client
 }
 
@@ -28,7 +31,7 @@ type Client struct {
 // bearer credentials.
 func NewClient(creds staxpayments.StaxAPICredentials) *Client {
 	c := staxpayments.NewClient(creds)
-	return &Client{core: &c}
+	return &Client{HostConfig: c.HostConfig, core: &c}
 }
 
 // Terminals returns all terminals associated with the merchant account.

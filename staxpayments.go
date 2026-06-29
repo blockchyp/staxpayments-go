@@ -56,18 +56,27 @@ var ErrInvalidAsyncRequest = errors.New("async requests must be terminal request
 // Version contains the version at build time
 var Version string
 
+// HostConfig holds the API host endpoints used by a client. It is shared (by
+// pointer) between the core client and the namespace clients that wrap it, so
+// overriding a host on a namespace client takes effect on its requests. It has
+// no methods, so embedding it exposes the host fields without exposing any of
+// the core transport.
+type HostConfig struct {
+	GatewayHost     string
+	TestGatewayHost string
+	DashboardHost   string
+	CoreHost        string
+}
+
 // Client is the main interface used by application developers.
 type Client struct {
 	Credentials         StaxAPICredentials
 	bcCredentials       APICredentials
 	bcCredentialsExpiry time.Time
 	bcCredentialsMu     sync.Mutex
-	GatewayHost         string
-	DashboardHost       string
-	TestGatewayHost     string
-	CoreHost            string
-	HTTPS               bool
-	RouteCache          string
+	*HostConfig
+	HTTPS      bool
+	RouteCache string
 
 	GatewayTimeout  time.Duration
 	TerminalTimeout time.Duration
@@ -85,13 +94,15 @@ func NewClient(creds StaxAPICredentials) Client {
 	userAgent := BuildUserAgent()
 
 	return Client{
-		Credentials:     creds,
-		GatewayHost:     DefaultGatewayHost,
-		TestGatewayHost: DefaultTestGatewayHost,
-		DashboardHost:   DefaultDashboardHost,
-		CoreHost:        DefaultCoreHost,
-		HTTPS:           DefaultHTTPS,
-		RouteCache:      filepath.Join(os.TempDir(), ".staxpayments_routes"),
+		Credentials: creds,
+		HostConfig: &HostConfig{
+			GatewayHost:     DefaultGatewayHost,
+			TestGatewayHost: DefaultTestGatewayHost,
+			DashboardHost:   DefaultDashboardHost,
+			CoreHost:        DefaultCoreHost,
+		},
+		HTTPS:      DefaultHTTPS,
+		RouteCache: filepath.Join(os.TempDir(), ".staxpayments_routes"),
 
 		GatewayTimeout:  DefaultGatewayTimeout,
 		TerminalTimeout: DefaultTerminalTimeout,

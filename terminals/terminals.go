@@ -16,25 +16,26 @@ import (
 	staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
-// Client is the Terminal Management Endpoints client. It embeds the shared
-// *staxpayments.Client for transport and credentials and exposes only this
-// namespace's methods.
+// Client is the Terminal Management Endpoints client. It wraps the shared core client for
+// transport and credentials via an unexported field, so only this namespace's
+// own operations are part of its public API (the core transport methods are
+// deliberately not exposed).
 type Client struct {
-	*staxpayments.Client
+	core *staxpayments.Client
 }
 
-// New returns a Terminal Management Endpoints client configured with the given Stax bearer
-// credentials.
-func New(creds staxpayments.StaxAPICredentials) *Client {
+// NewClient returns a Terminal Management Endpoints client configured with the given Stax
+// bearer credentials.
+func NewClient(creds staxpayments.StaxAPICredentials) *Client {
 	c := staxpayments.NewClient(creds)
-	return &Client{&c}
+	return &Client{core: &c}
 }
 
 // Terminals returns all terminals associated with the merchant account.
 func (client *Client) Terminals(request TerminalProfileRequest) (*TerminalProfileResponse, error) {
 	var response TerminalProfileResponse
 
-	err := client.DashboardRequest("/api/terminals", "GET", request, &response, request.Timeout)
+	err := client.core.DashboardRequest("/api/terminals", "GET", request, &response, request.Timeout)
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut

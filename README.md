@@ -56,7 +56,7 @@ func main() {
     // github.com/blockchyp/staxpayments-go. Construct a namespace client with
     // your Stax bearer token; terminal transactions transparently exchange it
     // for short-lived transient credentials.
-    client := payments.New(staxpayments.StaxAPICredentials{
+    client := payments.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -193,7 +193,7 @@ func chargeExample() {
     // construct the payments namespace client with your Stax bearer
     // token; terminal transactions transparently exchange it for short-lived
     // transient credentials
-    client := payments.New(staxpayments.StaxAPICredentials{
+    client := payments.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -282,7 +282,7 @@ func preauthExample() {
     // construct the payments namespace client with your Stax bearer
     // token; terminal transactions transparently exchange it for short-lived
     // transient credentials
-    client := payments.New(staxpayments.StaxAPICredentials{
+    client := payments.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -385,7 +385,7 @@ func refundExample() {
     // construct the payments namespace client with your Stax bearer
     // token; terminal transactions transparently exchange it for short-lived
     // transient credentials
-    client := payments.New(staxpayments.StaxAPICredentials{
+    client := payments.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -452,7 +452,7 @@ func terminalsExample() {
     // construct the terminals namespace client with your Stax bearer
     // token; terminal transactions transparently exchange it for short-lived
     // transient credentials
-    client := terminals.New(staxpayments.StaxAPICredentials{
+    client := terminals.NewClient(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 

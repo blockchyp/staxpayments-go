@@ -17,25 +17,26 @@ import (
 	staxpayments "github.com/blockchyp/staxpayments-go"
 )
 
-// Client is the Payment Endpoints client. It embeds the shared
-// *staxpayments.Client for transport and credentials and exposes only this
-// namespace's methods.
+// Client is the Payment Endpoints client. It wraps the shared core client for
+// transport and credentials via an unexported field, so only this namespace's
+// own operations are part of its public API (the core transport methods are
+// deliberately not exposed).
 type Client struct {
-	*staxpayments.Client
+	core *staxpayments.Client
 }
 
-// New returns a Payment Endpoints client configured with the given Stax bearer
-// credentials.
-func New(creds staxpayments.StaxAPICredentials) *Client {
+// NewClient returns a Payment Endpoints client configured with the given Stax
+// bearer credentials.
+func NewClient(creds staxpayments.StaxAPICredentials) *Client {
 	c := staxpayments.NewClient(creds)
-	return &Client{&c}
+	return &Client{core: &c}
 }
 
 // Charge executes a standard direct preauth and capture.
 func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationResponse, error) {
 	var response AuthorizationResponse
 
-	err := client.RouteTerminalRequest(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
+	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
 
 	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
@@ -52,7 +53,7 @@ func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationRespon
 func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationResponse, error) {
 	var response AuthorizationResponse
 
-	err := client.RouteTerminalRequest(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
+	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
 
 	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
@@ -69,7 +70,7 @@ func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationRespo
 func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, error) {
 	var response AuthorizationResponse
 
-	err := client.RouteTerminalRequest(request.TerminalName, "/api/refund", "/api/refund", "POST", &request, &response, request.Test, request.Timeout)
+	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/refund", "/api/refund", "POST", &request, &response, request.Test, request.Timeout)
 
 	if errors.Is(err, staxpayments.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal

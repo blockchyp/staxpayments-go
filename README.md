@@ -60,7 +60,7 @@ func main() {
         BearerToken: "<your-stax-bearer-token>",
     })
 
-    req := staxpayments.AuthorizationRequest{
+    req := payments.AuthorizationRequest{
         Test: true,
         TerminalName: "Test Terminal",
         Amount: "55.00",
@@ -198,7 +198,7 @@ func chargeExample() {
     })
 
     // setup request object
-    request := staxpayments.AuthorizationRequest{
+    request := payments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "55.00",
@@ -287,7 +287,7 @@ func preauthExample() {
     })
 
     // setup request object
-    request := staxpayments.AuthorizationRequest{
+    request := payments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "27.00",
@@ -390,7 +390,7 @@ func refundExample() {
     })
 
     // setup request object
-    request := staxpayments.RefundRequest{
+    request := payments.RefundRequest{
         TransactionID: "<PREVIOUS TRANSACTION ID>",
 
         // Optional amount for partial refunds.
@@ -457,7 +457,7 @@ func terminalsExample() {
     })
 
     // setup request object
-    request := staxpayments.TerminalProfileRequest{}
+    request := terminals.TerminalProfileRequest{}
 
     response, err := client.Terminals(request)
 

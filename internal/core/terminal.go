@@ -1,4 +1,4 @@
-package staxpayments
+package core
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	staxpayments "github.com/blockchyp/staxpayments-go"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -41,15 +42,15 @@ var ErrNoChange = errors.New("route unchanged")
 TerminalRoute models route information for a payment terminal.
 */
 type TerminalRoute struct {
-	Exists               bool           `json:"exists"`
-	TerminalName         string         `json:"terminalName"`
-	IPAddress            string         `json:"ipAddress"`
-	CloudRelayEnabled    bool           `json:"cloudRelayEnabled"`
-	TransientCredentials APICredentials `json:"transientCredentials,omitempty"`
-	PublicKey            string         `json:"publicKey"`
-	RawKey               RawPublicKey   `json:"rawKey"`
-	Timestamp            time.Time      `json:"timestamp"`
-	HTTPS                bool           `json:"https"`
+	Exists               bool                        `json:"exists"`
+	TerminalName         string                      `json:"terminalName"`
+	IPAddress            string                      `json:"ipAddress"`
+	CloudRelayEnabled    bool                        `json:"cloudRelayEnabled"`
+	TransientCredentials staxpayments.APICredentials `json:"transientCredentials,omitempty"`
+	PublicKey            string                      `json:"publicKey"`
+	RawKey               RawPublicKey                `json:"rawKey"`
+	Timestamp            time.Time                   `json:"timestamp"`
+	HTTPS                bool                        `json:"https"`
 }
 
 /*
@@ -206,14 +207,14 @@ func (client *Client) deriveOfflineKey() []byte {
 func (client *Client) encrypt(value string) string {
 
 	key := client.deriveOfflineKey()
-	return Encrypt(key, value)
+	return staxpayments.Encrypt(key, value)
 
 }
 
 func (client *Client) decrypt(value string) string {
 
 	key := client.deriveOfflineKey()
-	return Decrypt(key, value)
+	return staxpayments.Decrypt(key, value)
 
 }
 

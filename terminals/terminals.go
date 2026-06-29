@@ -14,24 +14,25 @@ import (
 	"net"
 
 	staxpayments "github.com/blockchyp/staxpayments-go"
+	"github.com/blockchyp/staxpayments-go/internal/core"
 )
 
 // Client is the Terminal Management Endpoints client. It wraps the shared core client for
 // transport and credentials via an unexported field, so only this namespace's
 // own operations are part of its public API (the core transport methods are
-// deliberately not exposed). The embedded *HostConfig exposes the configurable
-// API hosts (GatewayHost, TestGatewayHost, DashboardHost, CoreHost), shared
-// with the underlying core client.
+// deliberately not exposed).
 type Client struct {
-	*staxpayments.HostConfig
-	core *staxpayments.Client
+	core *core.Client
 }
 
 // NewClient returns a Terminal Management Endpoints client configured with the given Stax
-// bearer credentials.
+// bearer credentials. The shared core client can only be constructed through a
+// namespace like this one; the public staxpayments package exposes no client
+// constructor.
 func NewClient(creds staxpayments.StaxAPICredentials) *Client {
-	c := staxpayments.NewClient(creds)
-	return &Client{HostConfig: c.HostConfig, core: &c}
+	return &Client{
+		core: core.New(creds),
+	}
 }
 
 // Terminals returns all terminals associated with the merchant account.

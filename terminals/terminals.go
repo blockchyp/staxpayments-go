@@ -31,8 +31,8 @@ func New(creds staxpayments.StaxAPICredentials) *Client {
 }
 
 // Terminals returns all terminals associated with the merchant account.
-func (client *Client) Terminals(request staxpayments.TerminalProfileRequest) (*staxpayments.TerminalProfileResponse, error) {
-	var response staxpayments.TerminalProfileResponse
+func (client *Client) Terminals(request TerminalProfileRequest) (*TerminalProfileResponse, error) {
+	var response TerminalProfileResponse
 
 	err := client.DashboardRequest("/api/terminals", "GET", request, &response, request.Timeout)
 

@@ -46,7 +46,6 @@ import (
 
     staxpayments "github.com/blockchyp/staxpayments-go"
     "github.com/blockchyp/staxpayments-go/client"
-    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func main() {
@@ -59,7 +58,7 @@ func main() {
         BearerToken: "<your-stax-bearer-token>",
     })
 
-    req := payments.AuthorizationRequest{
+    req := staxpayments.AuthorizationRequest{
         Test: true,
         TerminalName: "Test Terminal",
         Amount: "55.00",
@@ -186,7 +185,6 @@ import (
 
     staxpayments "github.com/blockchyp/staxpayments-go"
     "github.com/blockchyp/staxpayments-go/client"
-    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func chargeExample() {
@@ -198,7 +196,7 @@ func chargeExample() {
     })
 
     // setup request object
-    request := payments.AuthorizationRequest{
+    request := staxpayments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "55.00",
@@ -276,7 +274,6 @@ import (
 
     staxpayments "github.com/blockchyp/staxpayments-go"
     "github.com/blockchyp/staxpayments-go/client"
-    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func preauthExample() {
@@ -288,7 +285,7 @@ func preauthExample() {
     })
 
     // setup request object
-    request := payments.AuthorizationRequest{
+    request := staxpayments.AuthorizationRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "27.00",
@@ -380,7 +377,6 @@ import (
 
     staxpayments "github.com/blockchyp/staxpayments-go"
     "github.com/blockchyp/staxpayments-go/client"
-    "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func refundExample() {
@@ -392,7 +388,7 @@ func refundExample() {
     })
 
     // setup request object
-    request := payments.RefundRequest{
+    request := staxpayments.RefundRequest{
         TransactionID: "<PREVIOUS TRANSACTION ID>",
 
         // Optional amount for partial refunds.
@@ -448,7 +444,6 @@ import (
 
     staxpayments "github.com/blockchyp/staxpayments-go"
     "github.com/blockchyp/staxpayments-go/client"
-    "github.com/blockchyp/staxpayments-go/terminals"
 )
 
 func terminalsExample() {
@@ -460,7 +455,7 @@ func terminalsExample() {
     })
 
     // setup request object
-    request := terminals.TerminalProfileRequest{}
+    request := staxpayments.TerminalProfileRequest{}
 
     response, err := staxClient.Terminals.Terminals(request)
 

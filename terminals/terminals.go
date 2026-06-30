@@ -36,8 +36,8 @@ func NewClient(core *core.Client) *Client {
 }
 
 // Terminals returns all terminals associated with the merchant account.
-func (client *Client) Terminals(request TerminalProfileRequest) (*TerminalProfileResponse, error) {
-	var response TerminalProfileResponse
+func (client *Client) Terminals(request staxpayments.TerminalProfileRequest) (*staxpayments.TerminalProfileResponse, error) {
+	var response staxpayments.TerminalProfileResponse
 
 	err := client.core.DashboardRequest("/api/terminals", "GET", request, &response, request.Timeout)
 

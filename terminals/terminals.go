@@ -11,6 +11,7 @@
 package terminals
 
 import (
+	"errors"
 	"net"
 
 	staxpayments "github.com/blockchyp/staxpayments-go"
@@ -35,6 +36,176 @@ func NewClient(core *core.Client) *Client {
 	}
 }
 
+// Ping tests connectivity with a payment terminal.
+func (client *Client) Ping(request staxpayments.PingRequest) (*staxpayments.PingResponse, error) {
+	var response staxpayments.PingResponse
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/test", "/api/terminal-test", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// Locate returns routing and location data for a payment terminal.
+func (client *Client) Locate(request staxpayments.LocateRequest) (*staxpayments.LocateResponse, error) {
+	var response staxpayments.LocateResponse
+
+	err := client.core.GatewayRequest("/api/terminal-locate", "POST", request, &response, request.Test, request.Timeout)
+
+	if err, ok := err.(net.Error); ok && err.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// Clear clears the line item display and any in progress transaction.
+func (client *Client) Clear(request staxpayments.ClearTerminalRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/clear", "/api/terminal-clear", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// TerminalStatus returns the current status of a terminal.
+func (client *Client) TerminalStatus(request staxpayments.TerminalStatusRequest) (*staxpayments.TerminalStatusResponse, error) {
+	var response staxpayments.TerminalStatusResponse
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/terminal-status", "/api/terminal-status", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// CaptureSignature captures and returns a signature.
+func (client *Client) CaptureSignature(request staxpayments.CaptureSignatureRequest) (*staxpayments.CaptureSignatureResponse, error) {
+	var response staxpayments.CaptureSignatureResponse
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/capture-signature", "/api/capture-signature", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// NewTransactionDisplay displays a new transaction on the terminal.
+func (client *Client) NewTransactionDisplay(request staxpayments.TransactionDisplayRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/txdisplay", "/api/terminal-txdisplay", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// UpdateTransactionDisplay appends items to an existing transaction display.
+// Subtotal, Tax, and Total are overwritten by the request. Items with the
+// same description are combined into groups.
+func (client *Client) UpdateTransactionDisplay(request staxpayments.TransactionDisplayRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/txdisplay", "/api/terminal-txdisplay", "PUT", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// Message displays a short message on the terminal.
+func (client *Client) Message(request staxpayments.MessageRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/message", "/api/message", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// BooleanPrompt asks the consumer a yes/no question.
+func (client *Client) BooleanPrompt(request staxpayments.BooleanPromptRequest) (*staxpayments.BooleanPromptResponse, error) {
+	var response staxpayments.BooleanPromptResponse
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/boolean-prompt", "/api/boolean-prompt", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// TextPrompt asks the consumer a text based question.
+func (client *Client) TextPrompt(request staxpayments.TextPromptRequest) (*staxpayments.TextPromptResponse, error) {
+	var response staxpayments.TextPromptResponse
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/text-prompt", "/api/text-prompt", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
 // Terminals returns all terminals associated with the merchant account.
 func (client *Client) Terminals(request staxpayments.TerminalProfileRequest) (*staxpayments.TerminalProfileResponse, error) {
 	var response staxpayments.TerminalProfileResponse
@@ -42,6 +213,53 @@ func (client *Client) Terminals(request staxpayments.TerminalProfileRequest) (*s
 	err := client.core.DashboardRequest("/api/terminals", "GET", request, &response, request.Timeout)
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// DeactivateTerminal deactivates a terminal.
+func (client *Client) DeactivateTerminal(request staxpayments.TerminalDeactivationRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.DashboardRequest("/api/terminal/"+request.TerminalID, "DELETE", request, &response, request.Timeout)
+
+	if err, ok := err.(net.Error); ok && err.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// ActivateTerminal activates a terminal.
+func (client *Client) ActivateTerminal(request staxpayments.TerminalActivationRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.DashboardRequest("/api/terminal-activate", "POST", request, &response, request.Timeout)
+
+	if err, ok := err.(net.Error); ok && err.Timeout() {
+		response.ResponseDescription = staxpayments.ResponseTimedOut
+	} else if err != nil {
+		response.ResponseDescription = err.Error()
+	}
+
+	return &response, err
+}
+
+// Reboot reboot a payment terminal.
+func (client *Client) Reboot(request staxpayments.PingRequest) (*staxpayments.Acknowledgement, error) {
+	var response staxpayments.Acknowledgement
+
+	err := client.core.RouteTransaction(request.TerminalName, "/api/reboot", "/api/terminal-reboot", "POST", &request, &response, request.Test, request.Timeout)
+
+	if errors.Is(err, core.ErrUnknownTerminal) {
+		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut
 	} else if err != nil {
 		response.ResponseDescription = err.Error()

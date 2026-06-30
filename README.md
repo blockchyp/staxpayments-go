@@ -420,6 +420,726 @@ These features can be used to extend a point of sale system's functionality.
 
 
 
+#### Terminal Ping
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This simple test transaction helps ensure good communication with a payment terminal 
+and is usually the first test you'll run in development.
+
+It tests communication with the terminal and returns a positive response if everything
+is okay.  It works the same way in local or cloud relay mode.
+
+If you get a positive response, you've successfully verified all of the following:
+
+* The terminal is online.
+* There is a valid route to the terminal.
+* The API Credentials are valid.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func pingExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.PingRequest{
+        TerminalName: "Test Terminal",
+    }
+
+    response, err := staxClient.Terminals.Ping(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Terminal Locate
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This endpoint returns a terminal's routing and location information.
+
+The result will indicate whether or not the terminal is in cloud relay mode and will
+return the local IP address if the terminal is in local mode.
+
+The terminal will also return the public key for the terminal.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func locateExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.LocateRequest{
+        TerminalName: "Test Terminal",
+    }
+
+    response, err := staxClient.Terminals.Locate(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Terminal Clear
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API interrupts whatever a terminal may be doing and returns it to the
+idle state.
+
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func clearExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.ClearTerminalRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+    }
+
+    response, err := staxClient.Terminals.Clear(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Terminal Status
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API returns the current status of a payment terminal.  This is typically used
+as a way to determine if the terminal is busy before sending a new transaction.
+
+If the terminal is busy, `idle` will be false and the `status` field will return
+a short string that indicates the transaction type currently in progress.  The system
+will also return the timestamp of the last status change in the `since` field.
+
+The `cardInSlot` field in the response will indicates whether or not a card is currently in the card reader slot.
+
+If the system is running a payment transaction and you wisely passed in a
+Transaction Ref, this API will also return the Transaction Ref of the in progress
+transaction.
+
+The table below lists all possible status responses.
+
+| Status Code          | Description                                                                             |
+|----------------------|-----------------------------------------------------------------------------------------|
+| idle                 | The terminal is idle and ready for transactions.  The default branding is being displayed. |
+| activate             | The terminal is in the process of activating and pairing with the merchant account.     |
+| balance              | A balance check (EBT or Gift Card) is pending on the terminal.                          |
+| boolean-prompt       | A boolean prompt (yes/no) operation is pending on the terminal.                         |      
+| signature            | A signature capture is pending.                                                         |
+| crypto               | A cryptocurrency transaction is pending.                                                |
+| enroll               | A token vault enrollment operation is pending.                                          |
+| gift-activate        | A gift card activation operation is in progress.                                        | 
+| message              | The terminal is displaying a custom message.                                            |
+| charge               | The terminal is executing a charge transaction.                                         |
+| preauth              | The terminal is executing a preauth transaction.                                        |
+| refund               | The terminal is executing a refund transaction.                                         |
+| survey               | The terminal is displaying post transaction survey questions.                           |
+| terms-and-conditions | The terminal is pending terms and conditions acceptance and signature.                  |
+| text-prompt          | The terminal is awaiting response to a text input prompt.                               |
+| txdisplay            | The terminal is displaying transaction and/or line item level details.                  |
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func terminalStatusExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TerminalStatusRequest{
+        TerminalName: "Test Terminal",
+    }
+
+    response, err := staxClient.Terminals.TerminalStatus(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Capture Signature
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This endpoint captures a written signature from the terminal and returns the
+image.
+
+Unlike the Terms & Conditions API, this endpoint performs basic signature
+capture with no agreement display or signature archival.
+
+Under the hood, signatures are captured in a proprietary vector format and
+must be converted to a common raster format in order to be useful to most
+applications.  At a minimum, you must specify an image format using the
+`sigFormat` parameter.  Currently, JPG and PNG are supported.
+
+By default, images are returned in the JSON response as hex encoded binary.
+You can redirect the binary image output to a file using the `sigFile`
+parameter.
+
+You can also scale the output image to your preferred width by
+passing in a `sigWidth` parameter.  The image will be scaled to that
+width, preserving the aspect ratio of the original image.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func captureSignatureExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.CaptureSignatureRequest{
+        TerminalName: "Test Terminal",
+
+        // file format for the signature image.
+        SigFormat: staxpayments.SignatureFormatPNG,
+
+        // width of the signature image in pixels.
+        SigWidth: 200,
+    }
+
+    response, err := staxClient.Terminals.CaptureSignature(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### New Transaction Display
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API sends totals and line item level data to the terminal.
+
+At a minimum, you should send total information as part of a display request,
+including `total`, `tax`, and `subtotal`.
+
+You can also send line item level data and each line item can have a `description`,
+`qty`, `price`, and `extended` price.
+
+If you fail to send an extended price, BlockChyp will multiply the `qty` by the
+`price`.  However, we strongly recommend you precalculate all the fields yourself
+to ensure consistency.  For example, your treatment of floating-point multiplication 
+and rounding may differ slightly from BlockChyp's.
+
+**Discounts**
+
+You have the option to show discounts on the display as individual line items
+with negative values or you can associate discounts with a specific line item.
+You can apply any number of discounts to an individual line item with a description
+and amount.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func newTransactionDisplayExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TransactionDisplayRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+        Transaction: &staxpayments.TransactionDisplayTransaction{
+            Subtotal: "60.00",
+            Tax:      "5.00",
+            Total:    "65.00",
+            Items: []*staxpayments.TransactionDisplayItem{
+                &staxpayments.TransactionDisplayItem{
+                    Description: "Leki Trekking Poles",
+                    Price:       "35.00",
+                    Quantity:    2,
+                    Extended:    "70.00",
+                    Discounts: []*staxpayments.TransactionDisplayDiscount{
+                        &staxpayments.TransactionDisplayDiscount{
+                            Description: "memberDiscount",
+                            Amount:      "10.00",
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+    response, err := staxClient.Terminals.NewTransactionDisplay(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Update Transaction Display
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+Similar to *New Transaction Display*, this variant allows developers to update
+line item level data currently being displayed on the terminal.
+
+This feature is designed for situations where you want to update the terminal display as
+items are scanned.  You'll only have to send information to the
+terminal that's changed, which usually means the new line item and updated totals.
+
+If the terminal is not in line item display mode and you invoke this endpoint,
+the first invocation will behave like a *New Transaction Display* call.
+
+At a minimum, you should send total information as part of a display request,
+including `total`, `tax`, and `subtotal`.
+
+You can also send line item level data and each line item can have a `description`,
+`qty`, `price`, and `extended` price.
+
+If you fail to send an extended price, BlockChyp will multiply the `qty` by the
+`price`.  However, we strongly recommend you precalculate all the fields yourself
+to ensure consistency.  For example, your treatment of floating-point multiplication and rounding
+may differ slightly from BlockChyp's.
+
+**Discounts**
+
+You have the option to show discounts on the display as individual line items
+with negative values or you can associate discounts with a specific line item.
+You can apply any number of discounts to an individual line item with a description
+and amount.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func updateTransactionDisplayExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TransactionDisplayRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+        Transaction: &staxpayments.TransactionDisplayTransaction{
+            Subtotal: "60.00",
+            Tax:      "5.00",
+            Total:    "65.00",
+            Items: []*staxpayments.TransactionDisplayItem{
+                &staxpayments.TransactionDisplayItem{
+                    Description: "Leki Trekking Poles",
+                    Price:       "35.00",
+                    Quantity:    2,
+                    Extended:    "70.00",
+                    Discounts: []*staxpayments.TransactionDisplayDiscount{
+                        &staxpayments.TransactionDisplayDiscount{
+                            Description: "memberDiscount",
+                            Amount:      "10.00",
+                        },
+                    },
+                },
+            },
+        },
+    }
+
+    response, err := staxClient.Terminals.UpdateTransactionDisplay(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Display Message
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API displays a message on the payment terminal.
+
+Just specify the target terminal and the message using the `message` parameter.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func messageExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.MessageRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+        Message:      "Thank you for your business.",
+    }
+
+    response, err := staxClient.Terminals.Message(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Boolean Prompt
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API prompts the customer to answer a yes or no question.
+
+You can specify the question or prompt with the `prompt` parameter and
+the response is returned in the `response` field.
+
+This can be used for a number of use cases including starting a loyalty enrollment
+workflow or customer facing suggestive selling prompts.
+
+**Custom Captions**
+
+You can optionally override the "YES" and "NO" button captions by
+using the `yesCaption` and `noCaption` request parameters.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func booleanPromptExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.BooleanPromptRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+        Prompt:       "Would you like to become a member?",
+        YesCaption:   "Yes",
+        NoCaption:    "No",
+    }
+
+    response, err := staxClient.Terminals.BooleanPrompt(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Text Prompt
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API prompts the customer to enter numeric or alphanumeric data.
+
+Due to PCI rules, free-form prompts are not permitted when the response
+could be any valid string.  The reason for this is that a malicious
+developer (not you, of course) could use text prompts to ask the customer to
+input a card number or PIN code.
+
+This means that instead of providing a prompt, you provide a `promptType` instead.
+
+The prompt types currently supported are listed below:
+
+* **phone**: Captures a phone number.
+* **email**: Captures an email address.
+* **first-name**: Captures a first name.
+* **last-name**: Captures a last name.
+* **customer-number**: Captures a customer number.
+* **rewards-number**: Captures a rewards number.
+
+You can specify the prompt with the `promptType` parameter and
+the response is returned in the `response` field.
+
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func textPromptExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TextPromptRequest{
+        Test:         true,
+        TerminalName: "Test Terminal",
+
+        // Type of prompt. Can be 'email', 'phone', 'customer-number', or 'rewards-number'.
+        PromptType: staxpayments.PromptTypeEmail,
+    }
+
+    response, err := staxClient.Terminals.TextPrompt(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
 #### List Terminals
 
 
@@ -458,6 +1178,176 @@ func terminalsExample() {
     request := staxpayments.TerminalProfileRequest{}
 
     response, err := staxClient.Terminals.Terminals(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Deactivate Terminal
+
+
+
+* **API Credential Types:** Merchant & Partner
+* **Required Role:** Terminal Management
+
+This API deactivates a payment terminal.
+
+If the terminal exists and is currently online, it will be removed from the merchant's 
+terminal inventory.  The terminal will be remotely cleared and factory reset.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func deactivateTerminalExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TerminalDeactivationRequest{
+        TerminalID: "<TERMINAL ID>",
+    }
+
+    response, err := staxClient.Terminals.DeactivateTerminal(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Activate Terminal
+
+
+
+* **API Credential Types:** Merchant & Partner
+* **Required Role:** Terminal Management
+
+This API activates a payment terminal.
+
+If successful, the payment terminal will restart, generate new encryption keys, and download any active
+branding assets for the merchant account it's been added to.
+
+Activation requests require an activation code and a unique terminal name.  All terminal names must be unique across
+a merchant account.
+
+Optional Parameters
+
+* **merchantId:** For partner scoped API credentials, a merchant ID is required.  For merchant scoped API credentials, the merchant ID is implicit and cannot be overridden.
+* **cloudRelay:** Activates the terminal in cloud relay mode.
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func activateTerminalExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.TerminalActivationRequest{
+        TerminalName:   "Test Terminal",
+        ActivationCode: "<ACTIVATION CODE>",
+    }
+
+    response, err := staxClient.Terminals.ActivateTerminal(request)
+
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    //process the result
+    if response.Success {
+        fmt.Println("Success")
+    }
+
+    fmt.Printf("Response: %+v\n", response)
+}
+
+```
+
+#### Reboot Terminal
+
+
+
+* **API Credential Types:** Merchant
+* **Required Role:** Payment API Access
+
+This API reboots the terminal.
+
+
+
+
+```go
+package main
+
+import (
+    "fmt"
+    "log"
+
+    staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
+)
+
+func rebootExample() {
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
+        BearerToken: "<your-stax-bearer-token>",
+    })
+
+    // setup request object
+    request := staxpayments.PingRequest{
+        TerminalName: "Test Terminal",
+    }
+
+    response, err := staxClient.Terminals.Reboot(request)
 
     if err != nil {
         log.Fatal(err)

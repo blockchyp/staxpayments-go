@@ -17,7 +17,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	staxpayments "github.com/blockchyp/staxpayments-go"
@@ -29,16 +28,16 @@ const terminalCN = "blockchyp-terminal"
 // Client is the shared Stax Payments client. It carries credentials, host
 // configuration, and the HTTP transport used by every namespace client.
 type Client struct {
-	Credentials         staxpayments.StaxAPICredentials
-	bcCredentials       staxpayments.APICredentials
-	bcCredentialsExpiry time.Time
-	bcCredentialsMu     sync.Mutex
-	GatewayHost         string
-	DashboardHost       string
-	TestGatewayHost     string
-	CoreHost            string
-	HTTPS               bool
-	RouteCache          string
+	Credentials staxpayments.StaxAPICredentials
+	// credStore is the in-memory cache for the short-lived transient credentials
+	// exchanged from the Stax bearer token (see credentials.go).
+	credStore       *credentialStore
+	GatewayHost     string
+	DashboardHost   string
+	TestGatewayHost string
+	CoreHost        string
+	HTTPS           bool
+	RouteCache      string
 
 	GatewayTimeout  time.Duration
 	TerminalTimeout time.Duration
@@ -57,6 +56,7 @@ func New(creds staxpayments.StaxAPICredentials) *Client {
 
 	return &Client{
 		Credentials:     creds,
+		credStore:       newCredentialStore(transientCredentialsSkew),
 		GatewayHost:     staxpayments.DefaultGatewayHost,
 		TestGatewayHost: staxpayments.DefaultTestGatewayHost,
 		DashboardHost:   staxpayments.DefaultDashboardHost,

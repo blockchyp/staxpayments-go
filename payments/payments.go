@@ -5,9 +5,9 @@
 // Changes to this file will be lost every time the code is regenerated.
 
 // Package payments is the Payment Endpoints namespace of the Stax
-// Payments Go SDK. It is its own module so it can be imported and versioned
-// independently of the other namespaces; it depends only on the shared core
-// module github.com/blockchyp/staxpayments-go.
+// Payments Go SDK. Construct it through the root client (client.New), which
+// builds the shared core transport once and injects it here so every namespace
+// shares a single transient-credential cache.
 package payments
 
 import (
@@ -21,64 +21,19 @@ import (
 // Client is the Payment Endpoints client. It wraps the shared core client for
 // transport and credentials via an unexported field, so only this namespace's
 // own operations are part of its public API (the core transport methods are
-// deliberately not exposed).
+// deliberately not exposed). Host configuration lives on the root client.
 type Client struct {
 	core *core.Client
 }
 
-// NewClient returns a Payment Endpoints client configured with the given Stax
-// bearer credentials. The shared core client can only be constructed through a
-// namespace like this one; the public staxpayments package exposes no client
-// constructor.
-func NewClient(creds staxpayments.StaxAPICredentials) *Client {
+// NewClient returns a Payment Endpoints client backed by the given shared core
+// transport. It is wired by the root client (client.New); callers construct the
+// SDK through that root rather than instantiating namespaces directly, so every
+// namespace shares one transient-credential cache.
+func NewClient(core *core.Client) *Client {
 	return &Client{
-		core: core.New(creds),
+		core: core,
 	}
-}
-
-// SetGatewayHost overrides the gateway host used for live transactions. Set it
-// to point the SDK at a non-production environment. An empty value restores the
-// default (https://api.blockchyp.com).
-func (client *Client) SetGatewayHost(host string) {
-	client.core.GatewayHost = host
-}
-
-// GatewayHost returns the gateway host used for live transactions.
-func (client *Client) GatewayHost() string {
-	return client.core.GatewayHost
-}
-
-// SetTestGatewayHost overrides the gateway host used for test transactions. An
-// empty value restores the default (https://test.blockchyp.com).
-func (client *Client) SetTestGatewayHost(host string) {
-	client.core.TestGatewayHost = host
-}
-
-// TestGatewayHost returns the gateway host used for test transactions.
-func (client *Client) TestGatewayHost() string {
-	return client.core.TestGatewayHost
-}
-
-// SetDashboardHost overrides the dashboard host. An empty value restores the
-// default (https://dashboard.blockchyp.com).
-func (client *Client) SetDashboardHost(host string) {
-	client.core.DashboardHost = host
-}
-
-// DashboardHost returns the dashboard host.
-func (client *Client) DashboardHost() string {
-	return client.core.DashboardHost
-}
-
-// SetCoreHost overrides the Stax core API host. An empty value restores the
-// default (https://apiprod.fattlabs.com).
-func (client *Client) SetCoreHost(host string) {
-	client.core.CoreHost = host
-}
-
-// CoreHost returns the Stax core API host.
-func (client *Client) CoreHost() string {
-	return client.core.CoreHost
 }
 
 // Charge executes a standard direct preauth and capture.

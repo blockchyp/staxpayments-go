@@ -120,7 +120,7 @@ func (client *Client) DashboardRequest(path, method string, request, response in
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.credStore.current()); err != nil {
 		return err
 	}
 
@@ -163,7 +163,7 @@ func (client *Client) DashboardUpload(path string, request staxpayments.UploadMe
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.credStore.current()); err != nil {
 		return err
 	}
 
@@ -220,7 +220,7 @@ func (client *Client) GatewayRequest(path, method string, request, response inte
 		return err
 	}
 
-	if err := addAPIRequestHeaders(req, client.bcCredentials); err != nil {
+	if err := addAPIRequestHeaders(req, client.credStore.current()); err != nil {
 		return err
 	}
 
@@ -370,11 +370,6 @@ func generateNonce() string {
 // internal mechanism of the SDK and is never exposed as a public method.
 const transientCredentialsPath = "/terminals/transient-credentials"
 
-// transientCredentialsSkew refreshes transient credentials this long before
-// their stated expiry to avoid a credential lapsing mid-request (clock-skew
-// buffer).
-const transientCredentialsSkew = 30 * time.Second
-
 // transientCredentialsResponse models the core API exchange response.
 type transientCredentialsResponse struct {
 	APIKey      string `json:"apiKey"`
@@ -434,32 +429,27 @@ func (client *Client) CoreRequest(path, method string, request, response interfa
 
 // ensure guarantees the client holds valid merchant-scoped transient
 // credentials, exchanging the Stax bearer token via the core API when the cache
-// is empty or near expiry. The mutex serializes concurrent callers so only one
-// exchange is in flight at a time (single-flight). Terminal and gateway calls
-// invoke this before signing a gateway request.
+// is empty or near expiry. The credential store serializes concurrent callers
+// so only one exchange is in flight at a time (single-flight). Terminal and
+// gateway calls invoke this before signing a gateway request.
 func (client *Client) ensure() error {
-	client.bcCredentialsMu.Lock()
-	defer client.bcCredentialsMu.Unlock()
+	return client.credStore.ensure(func() (staxpayments.APICredentials, time.Time, error) {
+		var result transientCredentialsResponse
+		if err := client.CoreRequest(transientCredentialsPath, http.MethodGet, struct{}{}, &result, nil); err != nil {
+			return staxpayments.APICredentials{}, time.Time{}, err
+		}
 
-	if !client.bcCredentialsExpiry.IsZero() && time.Now().Add(transientCredentialsSkew).Before(client.bcCredentialsExpiry) {
-		return nil
-	}
+		creds := staxpayments.APICredentials{
+			APIKey:      result.APIKey,
+			BearerToken: result.BearerToken,
+			SigningKey:  result.SigningKey,
+		}
 
-	var result transientCredentialsResponse
-	if err := client.CoreRequest(transientCredentialsPath, http.MethodGet, struct{}{}, &result, nil); err != nil {
-		return err
-	}
+		expiry := result.ExpiresAt
+		if expiry.IsZero() {
+			expiry = time.Now().Add(8 * time.Hour)
+		}
 
-	client.bcCredentials = staxpayments.APICredentials{
-		APIKey:      result.APIKey,
-		BearerToken: result.BearerToken,
-		SigningKey:  result.SigningKey,
-	}
-	if result.ExpiresAt.IsZero() {
-		client.bcCredentialsExpiry = time.Now().Add(8 * time.Hour)
-	} else {
-		client.bcCredentialsExpiry = result.ExpiresAt
-	}
-
-	return nil
+		return creds, expiry, nil
+	})
 }

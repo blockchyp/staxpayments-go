@@ -45,18 +45,17 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
     "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func main() {
 
-    // Each API area is its own module, imported and downloaded independently:
-    //   go get github.com/blockchyp/staxpayments-go/payments
-    // Shared types (requests, responses, credentials) live in the core module
-    // github.com/blockchyp/staxpayments-go. Construct a namespace client with
-    // your Stax bearer token; terminal transactions transparently exchange it
-    // for short-lived transient credentials.
-    client := payments.NewClient(staxpayments.StaxAPICredentials{
+    // Construct the root client with your Stax bearer token. It builds one
+    // shared transport that transparently exchanges the token for short-lived
+    // transient credentials and reuses them across every namespace, so a single
+    // credential cache is shared by client.Payments, client.Terminals, etc.
+    staxClient := client.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -66,7 +65,7 @@ func main() {
         Amount: "55.00",
     }
 
-    response, err := client.Charge(req)
+    response, err := staxClient.Payments.Charge(req)
 
     if err != nil {
         log.Fatal(err)
@@ -186,14 +185,15 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
     "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func chargeExample() {
-    // construct the payments namespace client with your Stax bearer
-    // token; terminal transactions transparently exchange it for short-lived
-    // transient credentials
-    client := payments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -204,7 +204,7 @@ func chargeExample() {
         Amount:       "55.00",
     }
 
-    response, err := client.Charge(request)
+    response, err := staxClient.Payments.Charge(request)
 
     if err != nil {
         log.Fatal(err)
@@ -275,14 +275,15 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
     "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func preauthExample() {
-    // construct the payments namespace client with your Stax bearer
-    // token; terminal transactions transparently exchange it for short-lived
-    // transient credentials
-    client := payments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -293,7 +294,7 @@ func preauthExample() {
         Amount:       "27.00",
     }
 
-    response, err := client.Preauth(request)
+    response, err := staxClient.Payments.Preauth(request)
 
     if err != nil {
         log.Fatal(err)
@@ -378,14 +379,15 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
     "github.com/blockchyp/staxpayments-go/payments"
 )
 
 func refundExample() {
-    // construct the payments namespace client with your Stax bearer
-    // token; terminal transactions transparently exchange it for short-lived
-    // transient credentials
-    client := payments.NewClient(staxpayments.StaxAPICredentials{
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
@@ -397,7 +399,7 @@ func refundExample() {
         Amount: "5.00",
     }
 
-    response, err := client.Refund(request)
+    response, err := staxClient.Payments.Refund(request)
 
     if err != nil {
         log.Fatal(err)
@@ -445,21 +447,22 @@ import (
     "log"
 
     staxpayments "github.com/blockchyp/staxpayments-go"
+    "github.com/blockchyp/staxpayments-go/client"
     "github.com/blockchyp/staxpayments-go/terminals"
 )
 
 func terminalsExample() {
-    // construct the terminals namespace client with your Stax bearer
-    // token; terminal transactions transparently exchange it for short-lived
-    // transient credentials
-    client := terminals.NewClient(staxpayments.StaxAPICredentials{
+    // construct the root client with your Stax bearer token; it builds one shared
+    // transport that transparently exchanges the token for short-lived transient
+    // credentials and reuses them across every namespace
+    staxClient := client.New(staxpayments.StaxAPICredentials{
         BearerToken: "<your-stax-bearer-token>",
     })
 
     // setup request object
     request := terminals.TerminalProfileRequest{}
 
-    response, err := client.Terminals(request)
+    response, err := staxClient.Terminals.Terminals(request)
 
     if err != nil {
         log.Fatal(err)

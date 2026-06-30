@@ -110,6 +110,10 @@ func consumeResponse(resp *http.Response, responseEntity interface{}) error {
 
 // DashboardRequest sends a gateway request with the default timeout.
 func (client *Client) DashboardRequest(path, method string, request, response interface{}, requestTimeout interface{}) error {
+	if err := client.ensure(); err != nil {
+		return err
+	}
+
 	content, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -210,6 +214,10 @@ func (client *Client) DashboardUpload(path string, request staxpayments.UploadMe
 
 // GatewayRequest sends a gateway request with the default timeout.
 func (client *Client) GatewayRequest(path, method string, request, response interface{}, testTx bool, requestTimeout interface{}) error {
+	if err := client.ensure(); err != nil {
+		return err
+	}
+
 	content, err := json.Marshal(request)
 	if err != nil {
 		return err

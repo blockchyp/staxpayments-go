@@ -134,13 +134,14 @@ type terminalRequestEnvelope struct {
 	Request interface{} `json:"request"`
 }
 
-// RouteTerminalRequest runs a terminal-routed transaction end to end: it ensures
-// valid transient credentials, populates signature options, resolves the
-// terminal route, and dispatches to the terminal, cloud relay, or gateway as
-// appropriate. It is the shared entry point the namespace clients (e.g. the
-// payments client) use for terminal transactions, so the terminal routing lives
+// RouteTransaction runs a payment transaction end to end: it ensures valid
+// transient credentials, populates signature options, then dispatches based on
+// whether a terminal is named — to the terminal (card-present), either directly
+// or via cloud relay, when a terminal name is supplied, or to the gateway
+// (card-not-present) otherwise. It is the shared entry point the namespace
+// clients (e.g. the payments client) use for transactions, so the routing lives
 // in one place rather than being duplicated per namespace.
-func (client *Client) RouteTerminalRequest(terminalName, terminalPath, gatewayPath, method string, request, response interface{}, testTx bool, requestTimeout interface{}) error {
+func (client *Client) RouteTransaction(terminalName, terminalPath, gatewayPath, method string, request, response interface{}, testTx bool, requestTimeout interface{}) error {
 	if err := client.ensure(); err != nil {
 		return err
 	}

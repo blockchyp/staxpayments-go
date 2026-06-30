@@ -37,8 +37,8 @@ func NewClient(core *core.Client) *Client {
 }
 
 // Charge executes a standard direct preauth and capture.
-func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationResponse, error) {
-	var response AuthorizationResponse
+func (client *Client) Charge(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
+	var response staxpayments.AuthorizationResponse
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
 
@@ -54,8 +54,8 @@ func (client *Client) Charge(request AuthorizationRequest) (*AuthorizationRespon
 }
 
 // Preauth executes a preauthorization intended to be captured later.
-func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationResponse, error) {
-	var response AuthorizationResponse
+func (client *Client) Preauth(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
+	var response staxpayments.AuthorizationResponse
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
 
@@ -71,8 +71,8 @@ func (client *Client) Preauth(request AuthorizationRequest) (*AuthorizationRespo
 }
 
 // Refund executes a refund.
-func (client *Client) Refund(request RefundRequest) (*AuthorizationResponse, error) {
-	var response AuthorizationResponse
+func (client *Client) Refund(request staxpayments.RefundRequest) (*staxpayments.AuthorizationResponse, error) {
+	var response staxpayments.AuthorizationResponse
 
 	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/refund", "/api/refund", "POST", &request, &response, request.Test, request.Timeout)
 

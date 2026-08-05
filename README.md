@@ -1148,8 +1148,7 @@ func deactivateTerminalExample() {
 
 
 
-* **API Credential Types:** Merchant & Partner
-* **Required Role:** Terminal Management
+* **API Credential Types:** Stax Bearer Token
 
 This API activates a payment terminal.
 
@@ -1159,10 +1158,8 @@ branding assets for the merchant account it's been added to.
 Activation requests require an activation code and a unique terminal name.  All terminal names must be unique across
 a merchant account.
 
-Optional Parameters
-
-* **merchantId:** For partner scoped API credentials, a merchant ID is required.  For merchant scoped API credentials, the merchant ID is implicit and cannot be overridden.
-* **cloudRelay:** Activates the terminal in cloud relay mode.
+This request is served by the Stax core API, so the merchant is derived from your bearer token and
+cannot be overridden.
 
 
 
@@ -1186,7 +1183,7 @@ func activateTerminalExample() {
     })
 
     // setup request object
-    request := staxpayments.TerminalActivationRequest{
+    request := staxpayments.TerminalActivationRequestV2{
         TerminalName:   "Test Terminal",
         ActivationCode: "<ACTIVATION CODE>",
     }

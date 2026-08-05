@@ -862,7 +862,7 @@ type AuthorizationRequest struct {
 	TestCase string `json:"testCase,omitempty"`
 
 	// Token is the payment token to be used for this transaction. This should be
-	// used for recurring transactions.
+	// used for recurring transactions. The /enroll endpoint ignores this field.
 	Token string `json:"token,omitempty"`
 
 	// Track1 contains track 1 magnetic stripe data.
@@ -1235,7 +1235,7 @@ type RefundRequest struct {
 	TestCase string `json:"testCase,omitempty"`
 
 	// Token is the payment token to be used for this transaction. This should be
-	// used for recurring transactions.
+	// used for recurring transactions. The /enroll endpoint ignores this field.
 	Token string `json:"token,omitempty"`
 
 	// Track1 contains track 1 magnetic stripe data.
@@ -1969,27 +1969,22 @@ type TerminalDeactivationRequest struct {
 	TerminalID string `json:"terminalId"`
 }
 
-// TerminalActivationRequest models a terminal activation request.
-type TerminalActivationRequest struct {
+// TerminalActivationRequestV2 models a terminal activation request. The
+// merchant is derived from the Stax bearer token, so no merchant id is
+// accepted.
+type TerminalActivationRequestV2 struct {
 	// Timeout is the request timeout in seconds.
 	Timeout int `json:"timeout"`
 
 	// Test specifies whether or not to route transaction to the test gateway.
 	Test bool `json:"test"`
 
-	// MerchantID is the optional merchant id.
-	MerchantID string `json:"merchantId"`
-
-	// ActivationCode is the terminal activation code displayed on the terminal.
-	ActivationCode string `json:"activationCode"`
-
 	// TerminalName is the name to be assigned to the terminal. Must be unique
 	// for the merchant account.
 	TerminalName string `json:"terminalName"`
 
-	// CloudRelay indicates that the terminal should be activated in cloud relay
-	// mode.
-	CloudRelay bool `json:"cloudRelay"`
+	// ActivationCode is the terminal activation code displayed on the terminal.
+	ActivationCode string `json:"activationCode"`
 }
 
 // TerminalProfile contains details about a merchant board platform
@@ -2418,7 +2413,7 @@ func (r PaymentAmounts) From(raw interface{}) (result PaymentAmounts, ok bool) {
 // PaymentMethod contains request details about a payment method.
 type PaymentMethod struct {
 	// Token is the payment token to be used for this transaction. This should be
-	// used for recurring transactions.
+	// used for recurring transactions. The /enroll endpoint ignores this field.
 	Token string
 
 	// Track1 contains track 1 magnetic stripe data.

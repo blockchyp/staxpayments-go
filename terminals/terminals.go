@@ -237,10 +237,10 @@ func (client *Client) DeactivateTerminal(request staxpayments.TerminalDeactivati
 }
 
 // ActivateTerminal activates a terminal.
-func (client *Client) ActivateTerminal(request staxpayments.TerminalActivationRequest) (*staxpayments.Acknowledgement, error) {
+func (client *Client) ActivateTerminal(request staxpayments.TerminalActivationRequestV2) (*staxpayments.Acknowledgement, error) {
 	var response staxpayments.Acknowledgement
 
-	err := client.core.DashboardRequest("/api/terminal-activate", "POST", request, &response, request.Timeout)
+	err := client.core.CoreRequest("/terminals", "POST", request, &response, request.Timeout)
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut

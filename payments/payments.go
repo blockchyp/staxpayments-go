@@ -40,7 +40,7 @@ func NewClient(core *core.Client) *Client {
 func (client *Client) Charge(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
 	var response staxpayments.AuthorizationResponse
 
-	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
+	err := client.core.RouteTransaction(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
 
 	if errors.Is(err, core.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
@@ -57,24 +57,7 @@ func (client *Client) Charge(request staxpayments.AuthorizationRequest) (*staxpa
 func (client *Client) Preauth(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
 	var response staxpayments.AuthorizationResponse
 
-	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
-
-	if errors.Is(err, core.ErrUnknownTerminal) {
-		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
-	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
-		response.ResponseDescription = staxpayments.ResponseTimedOut
-	} else if err != nil {
-		response.ResponseDescription = err.Error()
-	}
-
-	return &response, err
-}
-
-// Refund executes a refund.
-func (client *Client) Refund(request staxpayments.RefundRequest) (*staxpayments.AuthorizationResponse, error) {
-	var response staxpayments.AuthorizationResponse
-
-	err := client.core.RouteTerminalRequest(request.TerminalName, "/api/refund", "/api/refund", "POST", &request, &response, request.Test, request.Timeout)
+	err := client.core.RouteTransaction(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
 
 	if errors.Is(err, core.ErrUnknownTerminal) {
 		response.ResponseDescription = staxpayments.ResponseUnknownTerminal

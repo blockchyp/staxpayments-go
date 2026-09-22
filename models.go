@@ -195,6 +195,10 @@ type ReceiptSuggestions struct {
 	// CashDiscount is the discount applied to the transaction for payment
 	// methods ineligible for surcharges.
 	CashDiscount string `json:"cashDiscount,omitempty"`
+
+	// ServiceFeeAmount is the amount added to the transaction to cover
+	// processing fees.
+	ServiceFeeAmount string `json:"serviceFeeAmount,omitempty"`
 }
 
 // Acknowledgement contains a basic api acknowledgement.
@@ -2072,6 +2076,93 @@ type UploadMetadata struct {
 
 	// FileName is the name of file to be uploaded.
 	FileName string `json:"fileName"`
+}
+
+// AuthRequest models a Stax Payments charge or preauth request.
+type AuthRequest struct {
+	// TipAmount is the tip amount.
+	TipAmount string `json:"tipAmount,omitempty"`
+
+	// TaxAmount is the tax amount.
+	TaxAmount string `json:"taxAmount,omitempty"`
+
+	// TerminalName is the name of the terminal that should run the transaction.
+	TerminalName string `json:"terminalName,omitempty"`
+
+	// Amount is the requested amount.
+	Amount string `json:"amount"`
+
+	// CurrencyCode is the transaction currency code.
+	CurrencyCode string `json:"currencyCode"`
+
+	// PromptForTip indicates that the terminal should prompt for a tip.
+	PromptForTip bool `json:"promptForTip,omitempty"`
+
+	// Test specifies whether or not to route the transaction to the test
+	// gateway.
+	Test bool `json:"test"`
+
+	// Enroll indicates that the payment method should be added to the token
+	// vault alongside the authorization.
+	Enroll bool `json:"enroll,omitempty"`
+
+	// ExternalPartnerMetadata is an optional field that can be used to pass
+	// through data to external partners.
+	ExternalPartnerMetadata string `json:"externalPartnerMetadata,omitempty"`
+}
+
+// AuthResponse models a Stax Payments charge or preauth response.
+type AuthResponse struct {
+	// Success indicates whether or not the request succeeded.
+	Success bool `json:"success"`
+
+	// Error is the error, if an error occurred.
+	Error string `json:"error"`
+
+	// ResponseDescription contains a narrative description of the transaction
+	// result.
+	ResponseDescription string `json:"responseDescription"`
+
+	// TransactionID is the Stax transaction id.
+	TransactionID string `json:"transactionId,omitempty"`
+
+	// Approved indicates that the transaction was approved.
+	Approved bool `json:"approved"`
+
+	// AuthCode is the auth code from the payment network.
+	AuthCode string `json:"authCode,omitempty"`
+
+	// RequestedAmount is the requested amount.
+	RequestedAmount string `json:"requestedAmount"`
+
+	// AuthorizedAmount is the authorized amount, which may differ from the
+	// requested amount on a partial auth.
+	AuthorizedAmount string `json:"authorizedAmount"`
+
+	// CurrencyCode is the transaction currency code.
+	CurrencyCode string `json:"currencyCode"`
+
+	// EntryMethod is the entry method, such as CHIP, MSR or KEYED.
+	EntryMethod string `json:"entryMethod,omitempty"`
+
+	// MaskedPAN is the masked primary account number.
+	MaskedPAN string `json:"maskedPan,omitempty"`
+
+	// Network is the card network.
+	Network string `json:"network,omitempty"`
+
+	// Timestamp is the timestamp of the transaction.
+	Timestamp string `json:"timestamp"`
+
+	// Status indicates the current status of a transaction.
+	Status string `json:"status"`
+
+	// CardMetadata contains details about a payment card derived from its
+	// BIN/IIN.
+	CardMetadata *CardMetadata `json:"cardMetadata,omitempty"`
+
+	// Test indicates that the transaction ran on the test gateway.
+	Test bool `json:"test"`
 }
 
 // AbstractAcknowledgement contains fields which should be returned with

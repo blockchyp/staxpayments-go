@@ -48,6 +48,7 @@ func AuthResponseMapper(src AuthorizationResponse) AuthResponse {
 	dst.Timestamp = src.Timestamp
 	dst.Status = src.Status
 	dst.CardMetadata = src.CardMetadata
+	dst.ReceiptSuggestions = src.ReceiptSuggestions
 	dst.Test = src.Test
 
 	return dst

@@ -2161,6 +2161,9 @@ type AuthResponse struct {
 	// BIN/IIN.
 	CardMetadata *CardMetadata `json:"cardMetadata,omitempty"`
 
+	// ReceiptSuggestions contains suggested receipt fields.
+	ReceiptSuggestions ReceiptSuggestions `json:"receiptSuggestions"`
+
 	// Test indicates that the transaction ran on the test gateway.
 	Test bool `json:"test"`
 }

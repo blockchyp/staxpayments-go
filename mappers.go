@@ -22,6 +22,10 @@ func AuthRequestMapper(src AuthRequest) AuthorizationRequest {
 	dst.Test = src.Test
 	dst.Enroll = src.Enroll
 	dst.ExternalPartnerMetadata = src.ExternalPartnerMetadata
+	// The caller's own reference rides out as externalTransactionRef.
+	// BlockChyp's own transactionRef is a different thing: it drives duplicate
+	// detection and transaction recall, and carries the Stax transaction id.
+	dst.ExternalTransactionRef = src.TransactionRef
 
 	return dst
 }
@@ -50,6 +54,10 @@ func AuthResponseMapper(src AuthorizationResponse) AuthResponse {
 	dst.CardMetadata = src.CardMetadata
 	dst.ReceiptSuggestions = src.ReceiptSuggestions
 	dst.Test = src.Test
+	// The caller's own reference comes back from externalTransactionRef, not
+	// from BlockChyp's transactionRef, which carries the Stax transaction id and
+	// is surfaced as transactionId.
+	dst.TransactionRef = src.ExternalTransactionRef
 
 	return dst
 }

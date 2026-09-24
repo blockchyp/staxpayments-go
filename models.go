@@ -1146,6 +1146,11 @@ type AuthorizationRequest struct {
 
 	// ExternalCustomerCompany is the external customer's company name.
 	ExternalCustomerCompany string `json:"externalCustomerCompany,omitempty"`
+
+	// ExternalTransactionRef is the external merchant's own reference for the
+	// transaction. It is stored with the transaction and echoed back on the
+	// response, and is not used for duplicate detection.
+	ExternalTransactionRef string `json:"externalTransactionRef,omitempty"`
 }
 
 // CardMetadata contains essential information about a payment card derived
@@ -1647,6 +1652,11 @@ type AuthorizationResponse struct {
 	// EnhancedDataPassed indicates whether enhanced data was passed for the
 	// transaction.
 	EnhancedDataPassed *bool `json:"enhancedDataPassed,omitempty"`
+
+	// ExternalTransactionRef is the external merchant's own reference for the
+	// transaction. It is stored with the transaction and echoed back on the
+	// response, and is not used for duplicate detection.
+	ExternalTransactionRef string `json:"externalTransactionRef,omitempty"`
 }
 
 // TransactionDisplayDiscount is an item level discount for transaction
@@ -2109,6 +2119,10 @@ type AuthRequest struct {
 	// ExternalPartnerMetadata is an optional field that can be used to pass
 	// through data to external partners.
 	ExternalPartnerMetadata string `json:"externalPartnerMetadata,omitempty"`
+
+	// TransactionRef is your own reference for the transaction. It is stored
+	// with the transaction and echoed back on the response.
+	TransactionRef string `json:"transactionRef,omitempty"`
 }
 
 // AuthResponse models a Stax Payments charge or preauth response.
@@ -2166,6 +2180,10 @@ type AuthResponse struct {
 
 	// Test indicates that the transaction ran on the test gateway.
 	Test bool `json:"test"`
+
+	// TransactionRef is your own reference for the transaction. It is stored
+	// with the transaction and echoed back on the response.
+	TransactionRef string `json:"transactionRef,omitempty"`
 }
 
 // AbstractAcknowledgement contains fields which should be returned with

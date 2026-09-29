@@ -37,35 +37,53 @@ func NewClient(core *core.Client) *Client {
 }
 
 // Charge executes a standard direct preauth and capture.
-func (client *Client) Charge(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
-	var response staxpayments.AuthorizationResponse
+//
+// It takes and returns the Stax Payments models. The BlockChyp wire models are
+// an implementation detail: the request is mapped on the way out and the reply
+// on the way back. The wire response is described before mapping, so a
+// transport error still reaches the caller's ResponseDescription.
+func (client *Client) Charge(request staxpayments.AuthRequest) (*staxpayments.AuthResponse, error) {
+	wire := staxpayments.AuthRequestMapper(request)
 
-	err := client.core.RouteTransaction(request.TerminalName, "/api/charge", "/api/charge", "POST", &request, &response, request.Test, request.Timeout)
+	var wireResponse staxpayments.AuthorizationResponse
+
+	err := client.core.RouteTransaction(wire.TerminalName, "/api/charge", "/api/charge", "POST", &wire, &wireResponse, wire.Test, wire.Timeout)
 
 	if errors.Is(err, core.ErrUnknownTerminal) {
-		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+		wireResponse.ResponseDescription = staxpayments.ResponseUnknownTerminal
 	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
-		response.ResponseDescription = staxpayments.ResponseTimedOut
+		wireResponse.ResponseDescription = staxpayments.ResponseTimedOut
 	} else if err != nil {
-		response.ResponseDescription = err.Error()
+		wireResponse.ResponseDescription = err.Error()
 	}
+
+	response := staxpayments.AuthResponseMapper(wireResponse)
 
 	return &response, err
 }
 
 // Preauth executes a preauthorization intended to be captured later.
-func (client *Client) Preauth(request staxpayments.AuthorizationRequest) (*staxpayments.AuthorizationResponse, error) {
-	var response staxpayments.AuthorizationResponse
+//
+// It takes and returns the Stax Payments models. The BlockChyp wire models are
+// an implementation detail: the request is mapped on the way out and the reply
+// on the way back. The wire response is described before mapping, so a
+// transport error still reaches the caller's ResponseDescription.
+func (client *Client) Preauth(request staxpayments.AuthRequest) (*staxpayments.AuthResponse, error) {
+	wire := staxpayments.AuthRequestMapper(request)
 
-	err := client.core.RouteTransaction(request.TerminalName, "/api/preauth", "/api/preauth", "POST", &request, &response, request.Test, request.Timeout)
+	var wireResponse staxpayments.AuthorizationResponse
+
+	err := client.core.RouteTransaction(wire.TerminalName, "/api/preauth", "/api/preauth", "POST", &wire, &wireResponse, wire.Test, wire.Timeout)
 
 	if errors.Is(err, core.ErrUnknownTerminal) {
-		response.ResponseDescription = staxpayments.ResponseUnknownTerminal
+		wireResponse.ResponseDescription = staxpayments.ResponseUnknownTerminal
 	} else if timeout, ok := err.(net.Error); ok && timeout.Timeout() {
-		response.ResponseDescription = staxpayments.ResponseTimedOut
+		wireResponse.ResponseDescription = staxpayments.ResponseTimedOut
 	} else if err != nil {
-		response.ResponseDescription = err.Error()
+		wireResponse.ResponseDescription = err.Error()
 	}
+
+	response := staxpayments.AuthResponseMapper(wireResponse)
 
 	return &response, err
 }

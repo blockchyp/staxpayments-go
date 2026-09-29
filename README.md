@@ -58,7 +58,7 @@ func main() {
         BearerToken: "<your-stax-bearer-token>",
     })
 
-    req := staxpayments.AuthorizationRequest{
+    req := staxpayments.AuthRequest{
         Test: true,
         TerminalName: "Test Terminal",
         Amount: "55.00",
@@ -72,6 +72,7 @@ func main() {
 
     if response.Approved {
         fmt.Println("Approved")
+        fmt.Println(response.TransactionID)
         fmt.Println(response.AuthCode)
         fmt.Println(response.AuthorizedAmount)
         fmt.Println(response.ReceiptSuggestions.AID)
@@ -90,6 +91,17 @@ func main() {
 The response contains all the information you'll need to complete processing
 a transaction. Of particular importance is the ReceiptSuggestions struct, which
 contains all the fields that are required or recommended for PCI or EMV compliance.
+
+## Stax Payments Models
+
+`Charge` and `Preauth` accept an `AuthRequest` and return an `AuthResponse`:
+
+| Model | Purpose |
+| ----- | ------- |
+| `AuthRequest` | Charge and preauth request. Carries the amount, terminal, currency, tip and tax subtotals, and the test flag. |
+| `AuthResponse` | Charge and preauth response. Carries the approval, transaction id, auth code, authorized and requested amounts, card details such as the masked PAN, entry method and network, and the `ReceiptSuggestions` needed for PCI and EMV compliance. |
+
+`AuthResponse.TransactionID` is the Stax transaction id.
 
 
 
@@ -196,7 +208,7 @@ func chargeExample() {
     })
 
     // setup request object
-    request := staxpayments.AuthorizationRequest{
+    request := staxpayments.AuthRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "55.00",
@@ -285,7 +297,7 @@ func preauthExample() {
     })
 
     // setup request object
-    request := staxpayments.AuthorizationRequest{
+    request := staxpayments.AuthRequest{
         Test:         true,
         TerminalName: "Test Terminal",
         Amount:       "27.00",

@@ -240,7 +240,7 @@ func (client *Client) DeactivateTerminal(request staxpayments.TerminalDeactivati
 func (client *Client) ActivateTerminal(request staxpayments.TerminalActivationRequestV2) (*staxpayments.Acknowledgement, error) {
 	var response staxpayments.Acknowledgement
 
-	err := client.core.CoreRequest("/terminals", "POST", request, &response, request.Timeout)
+	err := client.core.CoreRequest("/internal/terminal", "POST", request, &response, request.Timeout)
 
 	if err, ok := err.(net.Error); ok && err.Timeout() {
 		response.ResponseDescription = staxpayments.ResponseTimedOut
